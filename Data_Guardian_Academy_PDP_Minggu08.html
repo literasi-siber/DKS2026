@@ -1,0 +1,2201 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Guardian — Cybersecurity Lab (Materi Minggu 08)</title>
+    <style>
+      :root {
+        --bg: #08111f;
+        --panel: #111e31;
+        --panel2: #172840;
+        --line: #29415f;
+        --txt: #edf5ff;
+        --muted: #9eb2ca;
+        --cyan: #48d7e8;
+        --green: #66e3a2;
+        --gold: #ffd166;
+        --pink: #ff78a8;
+        --purple: #b59aff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: radial-gradient(circle at 80% 0%, #17365a 0, transparent 34%), var(--bg);
+        color: var(--txt);
+        font:
+          15px/1.5 system-ui,
+          Segoe UI,
+          sans-serif;
+      }
+      header {
+        padding: 22px clamp(16px, 4vw, 48px);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .logo {
+        width: 46px;
+        height: 46px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--cyan), var(--purple));
+        display: grid;
+        place-items: center;
+        font-size: 25px;
+        color: #06111e;
+      }
+      h1 {
+        font-size: clamp(20px, 3vw, 29px);
+        margin: 0;
+      }
+      h2 {
+        margin: 0 0 8px;
+        font-size: 22px;
+      }
+      h3 {
+        margin: 0 0 8px;
+      }
+      .sub,
+      .muted {
+        color: var(--muted);
+      }
+      .sub {
+        font-size: 13px;
+      }
+      .stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .stat {
+        background: #102039;
+        border: 1px solid var(--line);
+        padding: 9px 14px;
+        border-radius: 13px;
+        min-width: 90px;
+      }
+      .stat b {
+        display: block;
+        font-size: 19px;
+        color: var(--cyan);
+      }
+      main {
+        max-width: 1200px;
+        margin: auto;
+        padding: 24px clamp(14px, 3vw, 36px) 60px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 18px;
+        margin-bottom: 20px;
+      }
+      .panel {
+        background: linear-gradient(145deg, #14243a, #0e1b2d);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 14px 40px #0002;
+      }
+      .hero .panel:first-child {
+        background: linear-gradient(120deg, #153550, #172541 70%, #30264f);
+      }
+      .eyebrow {
+        color: var(--cyan);
+        font-weight: 800;
+        letter-spacing: 1.6px;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+      .hero h2 {
+        font-size: clamp(24px, 4vw, 36px);
+        max-width: 650px;
+      }
+      .hero p {
+        color: #c2d4e9;
+        max-width: 680px;
+      }
+      .progress {
+        height: 9px;
+        border-radius: 20px;
+        background: #263a55;
+        overflow: hidden;
+        margin: 10px 0;
+      }
+      .progress span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, var(--cyan), var(--green));
+        width: 0%;
+        transition: 0.4s;
+      }
+      .nav {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        margin: 18px 0;
+      }
+      .nav button,
+      .btn {
+        border: 1px solid var(--line);
+        background: #14263e;
+        color: var(--txt);
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .nav button.active,
+      .btn.primary {
+        background: linear-gradient(110deg, #22aeca, #6379e9);
+        border: 0;
+        color: #061322;
+      }
+      .btn:hover,
+      .nav button:hover {
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+      .three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .wide {
+        grid-column: 1/-1;
+      }
+      .lab {
+        display: none;
+      }
+      .lab.active {
+        display: block;
+      }
+      .tag {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 20px;
+        background: #203c55;
+        color: var(--cyan);
+        font-size: 11px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        background: #091728;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        color: var(--txt);
+        margin: 7px 0 12px;
+        font: inherit;
+      }
+      .result {
+        padding: 13px;
+        background: #091728;
+        border: 1px dashed #416080;
+        border-radius: 12px;
+        min-height: 48px;
+        overflow-wrap: anywhere;
+      }
+      .result strong {
+        color: var(--green);
+      }
+      .code {
+        font:
+          600 17px ui-monospace,
+          monospace;
+        letter-spacing: 1px;
+        color: var(--cyan);
+      }
+      .actionrow {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .feedback {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #132a3c;
+        color: #c8e8f3;
+        border-left: 3px solid var(--cyan);
+        min-height: 45px;
+      }
+      .token {
+        font:
+          700 20px ui-monospace,
+          monospace;
+        color: var(--gold);
+        letter-spacing: 1px;
+      }
+      .lock {
+        font-size: 46px;
+        text-align: center;
+        margin: 8px;
+      }
+      .choice {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px;
+        margin: 8px 0;
+        background: #0b1a2c;
+        color: var(--txt);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        cursor: pointer;
+      }
+      .choice:hover {
+        border-color: var(--cyan);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid #5a4c83;
+        background: #282448;
+        color: #d7c9ff;
+        border-radius: 20px;
+        padding: 7px 11px;
+        font-weight: 800;
+        font-size: 12px;
+      }
+      .meter {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .mission {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .mission:last-child {
+        border: 0;
+      }
+      .pillrow {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 10px 0;
+      }
+      .pill {
+        padding: 7px 10px;
+        border-radius: 10px;
+        background: #20364f;
+        border: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .good {
+        color: var(--green);
+      }
+      .warn {
+        color: var(--gold);
+      }
+      .bad {
+        color: var(--pink);
+      }
+      .scenario {
+        padding: 14px;
+        background: #0a192a;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        margin: 10px 0;
+      }
+      .checkline {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        margin: 10px 0;
+        color: #d8e6f6;
+      }
+      .checkline input {
+        width: auto;
+        margin: 4px 0 0;
+      }
+      .reset-row {
+        margin-top: 20px;
+        text-align: center;
+      }
+      .footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 24px;
+      }
+      @media print {
+        body { background: #fff !important; color: #111 !important; }
+        body * { visibility: hidden !important; }
+        #reportPrint, #reportPrint * { visibility: visible !important; }
+        #reportPrint { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; background: #fff !important; color: #111 !important; border: 0 !important; box-shadow: none !important; }
+        #reportPrint .muted, #reportPrint .sub { color: #444 !important; }
+        #reportPrint .result, #reportPrint .stat { background: #fff !important; color: #111 !important; border: 1px solid #bbb !important; }
+        #reportPrint h2, #reportPrint h3, #reportPrint b, #reportPrint strong { color: #111 !important; }
+        .no-print { display: none !important; }
+      }
+      @media (max-width: 760px) {
+        .hero,
+        .grid,
+        .three {
+          grid-template-columns: 1fr;
+        }
+        .stats {
+          width: 100%;
+        }
+        .stat {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <div class="logo">🛡️</div>
+        <div>
+          <h1>DATA GUARDIAN</h1>
+          <div class="sub">Cybersecurity Lab · Rekayasa Keamanan Siber Polibatam</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="xp">0 XP</b><span class="sub">Pengalaman</span></div>
+        <div class="stat"><b id="level">1</b><span class="sub">Level</span></div>
+        <div class="stat"><b id="stars" style="color:#ffd43b">☆☆☆☆☆☆</b><span class="sub">Lencana</span></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel" id="identityPanel" style="margin-bottom:18px">
+        <div class="eyebrow">👤 IDENTITAS PESERTA PRAKTIKUM</div>
+        <h3>Lengkapi identitas sebelum memulai</h3>
+        <div class="grid three" style="gap:10px">
+          <div><label for="studentName">Nama lengkap</label><input id="studentName" placeholder="Nama mahasiswa" autocomplete="name"></div>
+          <div><label for="studentNim">NIM</label><input id="studentNim" placeholder="Nomor Induk Mahasiswa"></div>
+          <div><label for="studentClass">Kelas</label><input id="studentClass" placeholder="Contoh: TRPL 2A"></div>
+        </div>
+        <div class="actionrow no-print">
+          <button class="btn primary" id="saveIdentityBtn" onclick="saveStudentIdentity()">💾 Simpan Identitas</button>
+          <button class="btn" id="editIdentityBtn" onclick="requestIdentityChange()" style="display:none">🔒 Ganti Identitas</button>
+          <span class="muted" id="identityFeedback">Setelah disimpan, identitas terkunci selama permainan berlangsung.</span>
+        </div>
+      </section>
+
+      <section class="panel" id="badgeGuide" style="margin-bottom:18px">
+        <div class="eyebrow">⭐ PANDUAN LENCANA</div>
+        <h3>Sistem Lencana Data Guardian</h3>
+        <p>Mahasiswa mengumpulkan bintang dari dua kategori: misi teknis dan modul konsep. Setiap kategori memiliki tiga tingkat pencapaian. Bintang ditampilkan berwarna kuning dengan ukuran bertahap dari kecil hingga besar.</p>
+        <style>
+          .star-tier { color:#ffd43b; line-height:1.2; text-shadow:0 1px 5px #ffd43b55; }
+          .star-small { font-size:18px; }
+          .star-medium { font-size:26px; }
+          .star-large { font-size:36px; }
+          .star-empty { color:#64748b; text-shadow:none; }
+          .star-level { display:flex; align-items:center; gap:9px; margin:7px 0; }
+        </style>
+        <div class="grid two" style="gap:12px">
+          <div class="result">
+            <b>🛡️ Misi Teknis</b>
+            <div class="star-level"><span class="star-tier star-small">★</span><span>2 dari 6 misi selesai</span></div>
+            <div class="star-level"><span class="star-tier star-medium">★</span><span>4 dari 6 misi selesai</span></div>
+            <div class="star-level"><span class="star-tier star-large">★</span><span>6 dari 6 misi selesai</span></div>
+          </div>
+          <div class="result">
+            <b>📚 Modul Konsep</b>
+            <div class="star-level"><span class="star-tier star-small">★</span><span>2 dari 6 modul selesai</span></div>
+            <div class="star-level"><span class="star-tier star-medium">★</span><span>4 dari 6 modul selesai</span></div>
+            <div class="star-level"><span class="star-tier star-large">★</span><span>6 dari 6 modul selesai</span></div>
+          </div>
+        </div>
+        <p class="muted">Total tersedia 6 bintang: 3 dari misi teknis dan 3 dari modul konsep. Predikat akhir tetap dihitung terpisah berdasarkan nilai gabungan misi teknis (60%), modul konsep (20%), dan Boss Challenge (20%).</p>
+      </section>
+
+      <section class="hero">
+        <div class="panel">
+          <div class="eyebrow">⚡ SIMULASI INTERAKTIF · MINGGU 08</div>
+          <h2>Selamat datang, <span style="color: var(--cyan)">Data Guardian!</span></h2>
+          <p>Pelajari perlindungan data pribadi melalui 6 misi teknis, 6 modul konsep, dan 1 evaluasi akhir. Seluruh data praktikum bersifat fiktif dan diproses secara lokal di browser.</p>
+          <div class="meter"><span>PROGRES MISI TEKNIS</span><b id="progressText">0 / 6</b></div>
+          <div class="progress"><span id="progressBar"></span></div>
+          <div class="meter"><span>PROGRES MODUL KONSEP</span><b id="conceptProgressText">0 / 6</b></div>
+          <div class="progress"><span id="conceptProgressBar"></span></div>
+          <div class="meter"><span>EVALUASI AKHIR · BOSS CHALLENGE</span><b id="evaluationProgressText">Belum dikerjakan</b></div>
+          <div class="progress"><span id="evaluationProgressBar"></span></div>
+          <span class="badge">🎯 Target: Privacy Defender</span>
+        </div>
+        <div class="panel">
+          <div class="eyebrow">📡 STATUS PRAKTIK MANDIRI</div>
+          <h3>Lab Keamanan Data Kampus</h3>
+          <p class="muted">Progres belajar Anda disimpan secara lokal di browser (`localStorage`), sehingga aman dilanjutkan kapan saja.</p>
+          <div class="grid three" style="gap: 8px; margin-top: 12px">
+            <div class="stat"><b id="summaryMission">0/6</b><span class="sub">Misi Teknis</span></div>
+            <div class="stat"><b id="summaryConcept">0/6</b><span class="sub">Modul Konsep</span></div>
+            <div class="stat"><b id="summaryEvaluation">0/12</b><span class="sub">Evaluasi Akhir</span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="nav">
+        <button class="active" data-tab="brief">🏁 Briefing</button>
+        <span class="pill" style="align-self:center">6 MISI TEKNIS</span>
+        <button data-tab="mask">🫥 Misi 1 · Masking</button>
+        <button data-tab="token">🎟️ Misi 2 · Tokenisasi</button>
+        <button data-tab="encrypt">🔐 Misi 3 · Enkripsi</button>
+        <button data-tab="access">🚪 Misi 4 · Access Control</button>
+        <button data-tab="audit">📋 Misi 5 · Audit Trail</button>
+        <button data-tab="breach">🚨 Misi 6 · Breach Response</button>
+        <span class="pill" style="align-self:center">6 MODUL KONSEP</span>
+        <button data-tab="classify">🗂️ Klasifikasi</button>
+        <button data-tab="actors">👥 Aktor & Kepatuhan</button>
+        <button data-tab="consent">✍️ Consent</button>
+        <button data-tab="rights">⚖️ Hak Subjek</button>
+        <button data-tab="principles">📚 Prinsip Pemrosesan</button>
+        <button data-tab="privacy">🏗️ Privacy by Design</button>
+        <span class="pill" style="align-self:center">EVALUASI</span>
+        <button data-tab="quiz">🏆 Boss Challenge</button>
+        <button data-tab="report">📄 Laporan Nilai</button>
+      </div>
+
+      <!-- 1. BRIEFING -->
+      <section id="brief" class="lab active">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">CERITA MISI</span>
+            <h2>Operasi Data Kampus & Industri</h2>
+            <p>Di era ekonomi digital, data pribadi adalah aset berharga (*crown jewel*). Anda berperan sebagai pengawas keamanan yang memastikan kepatuhan terhadap regulasi UU PDP No. 27 Tahun 2022.</p>
+            <div class="mission">
+              <span>🫥</span>
+              <div>
+                <b>Misi 1 — The Invisible Identity</b>
+                <div class="muted">Samarkan tampilan data sensitif mahasiswa.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🎟️</span>
+              <div>
+                <b>Misi 2 — The Token Vault</b>
+                <div class="muted">Ganti data asli dengan token dan pahami manajemen vault.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🔐</span>
+              <div>
+                <b>Misi 3 — The Cipher Gate</b>
+                <div class="muted">Gunakan Web Crypto API untuk enkripsi AES-GCM.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🚪</span>
+              <div>
+                <b>Misi 4 — The Gatekeeper</b>
+                <div class="muted">Atur hak akses pengguna berdasarkan peran (RBAC).</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>📋</span>
+              <div>
+                <b>Misi 5 — Digital Footprint</b>
+                <div class="muted">Analisis audit trail dan deteksi aktivitas tidak wajar.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🚨</span>
+              <div>
+                <b>Misi 6 — Incident Commander</b>
+                <div class="muted">Tentukan langkah penanganan insiden kebocoran data.</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <span class="tag">PETA KOMPETENSI</span>
+            <h3>Pilar Perlindungan Data</h3>
+            <p>🫥 <b>Masking:</b> Menyembunyikan sebagian karakter visual data sensitif.</p>
+            <p>🎟️ <b>Tokenisasi:</b> Mengganti nilai sensitif dengan token acak; pemetaan disimpan aman di vault.</p>
+            <p>🔐 <b>Enkripsi:</b> Mengamankan data dengan algoritma kuat dan kunci kriptografi.</p>
+            <p>🚪 <b>Access Control:</b> Membatasi akses berdasarkan peran dan kebutuhan.</p>
+            <p>📋 <b>Audit Trail:</b> Mencatat aktivitas untuk pemantauan dan investigasi.</p>
+            <p>🚨 <b>Breach Response:</b> Menangani insiden dan mengelola notifikasi.</p>
+            <div class="feedback">Catatan: Seluruh proses berjalan secara lokal di browser Anda untuk keperluan edukasi keamanan siber.</div>
+            <button class="btn primary" onclick="go('mask')" style="margin-top: 12px">Mulai Misi 1 →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. MASKING -->
+      <section id="mask" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MISI 1 · 100 XP</span>
+            <h2>🫥 The Invisible Identity</h2>
+            <p class="muted">Pilih data fiktif lalu tentukan bagian karakter yang boleh terlihat.</p>
+            <label>Data yang akan disamarkan</label>
+            <select id="maskType">
+              <option value="nim">NIM</option>
+              <option value="email">Email</option>
+              <option value="phone">Nomor telepon</option>
+            </select>
+            <label>Nilai data fiktif</label>
+            <input id="maskInput" value="3312301007" />
+            <label>Karakter yang ditampilkan di awal/akhir</label>
+            <select id="maskMode">
+              <option value="2">2 karakter awal dan 2 akhir</option>
+              <option value="3">3 karakter awal dan 2 akhir</option>
+              <option value="0">Sembunyikan seluruh karakter</option>
+            </select>
+            <button class="btn primary" onclick="doMask()">Jalankan masking</button>
+            <div class="result" id="maskResult">Hasil akan muncul di sini.</div>
+            <div class="feedback" id="maskFeedback">💡 Tantangan: apakah masking selalu menghilangkan data asli dari sistem?</div>
+          </div>
+          <div class="panel">
+            <span class="tag">KONSEP KUNCI</span>
+            <h3>Visualisasi sebelum & sesudah</h3>
+            <div class="lock">👁️ → 🕶️</div>
+            <div class="result">
+              <div class="muted">DATA ASLI</div>
+              <div class="code" id="beforeMask">3312301007</div>
+            </div>
+            <div style="text-align: center; font-size: 24px; margin: 8px">⬇️</div>
+            <div class="result">
+              <div class="muted">TAMPILAN TERSAMAR</div>
+              <div class="code" id="afterMask">••••••••••</div>
+            </div>
+            <p class="muted">Masking mengendalikan tampilan antarmuka. Data mentah di backend mungkin tetap ada.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. TOKENISASI -->
+      <section id="token" class="lab">
+        <div class="panel" style="margin-bottom: 16px">
+          <span class="tag">MISI 2 · 100 XP</span>
+          <h2>🎟️ The Token Vault — Lihat ke Mana Data Disimpan</h2>
+          <p class="muted">Pada tokenisasi, aplikasi pengguna menerima token. Data asli dan hubungan token–data asli disimpan terpisah di dalam Token Vault Database. Coba alurnya di bawah ini.</p>
+          <div class="grid three" style="gap: 10px; margin-top: 14px">
+            <div class="scenario">
+              <div class="eyebrow">ZONA A</div>
+              <div style="font-size: 25px">📱</div>
+              <b>Aplikasi Kampus</b>
+              <p class="muted">Menggunakan token, bukan NIM asli.</p>
+            </div>
+            <div class="scenario">
+              <div class="eyebrow">ZONA B</div>
+              <div style="font-size: 25px">🔁</div>
+              <b>Layanan Tokenisasi</b>
+              <p class="muted">Membuat token acak dan mengatur pemetaan.</p>
+            </div>
+            <div class="scenario">
+              <div class="eyebrow">ZONA C</div>
+              <div style="font-size: 25px">🗄️</div>
+              <b>Token Vault Database</b>
+              <p class="muted">Menyimpan pasangan token dan data asli secara terpisah.</p>
+            </div>
+          </div>
+          <div class="scenario" style="text-align: center">
+            <div style="font-weight: 800; color: var(--cyan)">ALUR DATA</div>
+            <div class="pillrow" style="justify-content: center">
+              <span class="pill">Data asli: NIM 3312301007</span><b>→</b><span class="pill">Tokenisasi</span><b>→</b><span class="pill">TKN-…</span><b>→</b><span class="pill">Vault Database</span>
+            </div>
+            <p class="muted" style="margin: 4px 0 0">Aplikasi kampus menyimpan/menggunakan token. Hanya layanan yang berwenang yang dapat meminta pemetaan kembali dari vault.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">LANGKAH 1 · BUAT TOKEN</span>
+            <h3>Masukkan data fiktif</h3>
+            <label>Jenis data</label>
+            <select id="tokenType">
+              <option>NIM Mahasiswa</option>
+              <option>Nomor Telepon</option>
+              <option>Email</option>
+              <option>Nomor Rekening</option>
+            </select>
+            <label>Nilai data asli</label>
+            <input id="tokenInput" value="3312301007" autocomplete="off" />
+            <button class="btn primary" onclick="makeToken()">⚙️ Tokenisasi & simpan ke vault</button>
+            <div class="result" style="margin-top: 12px">
+              <div class="muted">TOKEN YANG DITERIMA APLIKASI</div>
+              <div id="tokenOutput" class="token">TKN-••••••</div>
+            </div>
+            <div class="feedback" id="tokenFeedback">Belum ada proses. Buat token untuk melihat data masuk ke database vault.</div>
+          </div>
+          <div class="panel">
+            <span class="tag">LANGKAH 2 · SIMULASI APLIKASI</span>
+            <h3>Data yang dilihat aplikasi kampus</h3>
+            <p class="muted">Aplikasi kampus hanya menerima token. Aplikasi tidak perlu mengetahui NIM atau nomor asli untuk proses yang menggunakan identifier ini.</p>
+            <div class="result">
+              <div class="muted">RECORD PADA APLIKASI</div>
+              <div class="code" id="appTokenRecord">Belum ada token</div>
+              <div class="muted" style="margin-top: 6px">Nilai asli: <b class="good">tidak ditampilkan</b></div>
+            </div>
+            <div class="feedback">Prinsip pemisahan: database aplikasi ≠ Token Vault Database.</div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 16px">
+          <span class="tag">LANGKAH 2B · DATABASE APLIKASI</span>
+          <h3>📱 Tabel pada Aplikasi Kampus</h3>
+          <p class="muted">Perhatikan bahwa tabel aplikasi hanya menyimpan token dan metadata seperlunya. Nilai data pribadi asli tidak disimpan di tabel ini.</p>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:520px">
+              <thead><tr style="text-align:left;color:var(--cyan);border-bottom:1px solid var(--line)">
+                <th style="padding:10px">Token</th><th style="padding:10px">Jenis</th><th style="padding:10px">Dibuat</th><th style="padding:10px">Status</th>
+              </tr></thead>
+              <tbody id="appTokenRows"><tr><td colspan="4" class="muted" style="padding:12px">Belum ada token pada aplikasi.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 16px">
+          <div class="row" style="display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap">
+            <div>
+              <span class="tag">LANGKAH 3 · DATABASE</span>
+              <h3>🗄️ Token Vault Database</h3>
+              <p class="muted">Tabel simulasi berisi pemetaan token ke data asli. Data asli disamarkan; pilih peran petugas sebelum mencoba lookup atau mencabut token.</p>
+            </div>
+            <span class="badge" id="vaultCount">0 record tersimpan</span>
+          </div>
+          <div class="scenario">
+            <label for="vaultRole">Identitas petugas yang mencoba mengakses vault</label>
+            <select id="vaultRole">
+              <option value="student">Mahasiswa</option>
+              <option value="lecturer">Dosen</option>
+              <option value="app">Layanan Aplikasi Kampus</option>
+              <option value="vault_operator">Petugas Vault (berwenang)</option>
+            </select>
+            <p class="muted">Dalam simulasi ini hanya Petugas Vault yang boleh melihat pemetaan token ke data asli. Pilihan peran ini hanya demonstrasi, bukan autentikasi sungguhan.</p>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; min-width: 700px">
+              <thead>
+                <tr style="text-align: left; color: var(--cyan); border-bottom: 1px solid var(--line)">
+                  <th style="padding: 10px">Token ID</th>
+                  <th style="padding: 10px">Jenis Data</th>
+                  <th style="padding: 10px">Data Asli di Vault</th>
+                  <th style="padding: 10px">Status</th>
+                  <th style="padding: 10px">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="vaultRows">
+                <tr>
+                  <td colspan="5" class="muted" style="padding: 14px; text-align: center">Database masih kosong. Buat token untuk menambahkan record.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="feedback" id="vaultLookupResult">🔐 Hasil lookup akan ditampilkan di sini. Dalam sistem nyata, proses ini harus melalui autentikasi, otorisasi, dan audit.</div>
+        </div>
+
+        <div class="grid" style="margin-top: 16px">
+          <div class="panel">
+            <span class="tag">LANGKAH 4 · AUDIT</span>
+            <h3>📋 Access Log</h3>
+            <p class="muted">Catatan aktivitas saat token dibuat atau data asli diminta dari vault.</p>
+            <div id="vaultLogs" class="result">Belum ada aktivitas.</div>
+          </div>
+          <div class="panel">
+            <span class="tag">UJI KONSEP</span>
+            <h3>Kenapa vault harus dipisah?</h3>
+            <ul class="muted">
+              <li>Jika database aplikasi bocor, penyerang hanya melihat token, bukan langsung data asli.</li>
+              <li>Vault menjadi komponen sensitif yang perlu perlindungan ekstra.</li>
+              <li>Akses pemetaan token harus dibatasi berdasarkan peran dan kebutuhan.</li>
+              <li>Aktivitas lookup perlu dicatat dan dipantau.</li>
+            </ul>
+            <div class="feedback">Penting: tokenisasi bukan enkripsi. Token tidak dihitung kembali dari data asli; pemetaan disimpan di vault.</div>
+            <button class="btn" id="clearTokenVaultBtn" type="button">🧹 Kosongkan database simulasi</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <span class="tag">CONTOH IMPLEMENTASI · ALUR END-TO-END</span>
+          <h3>Bagaimana tokenisasi diterapkan pada aplikasi?</h3>
+          <div class="grid three">
+            <div class="scenario"><b>1. Input ke layanan tokenisasi</b><p class="muted">Aplikasi mengirim data fiktif melalui layanan yang berwenang.</p></div>
+            <div class="scenario"><b>2. Simpan pemetaan di vault</b><p class="muted">Vault membuat token acak dan menyimpan relasi token–nilai asli.</p></div>
+            <div class="scenario"><b>3. Aplikasi memakai token</b><p class="muted">Database aplikasi menyimpan token, bukan nilai asli.</p></div>
+          </div>
+          <div class="scenario">
+            <b>Contoh data setelah proses</b>
+            <p class="muted">Data asli (misalnya NIM) → Token Vault: token + NIM asli. Aplikasi Kampus: token + data layanan non-sensitif yang diperlukan.</p>
+            <p class="muted">Jika suatu proses benar-benar membutuhkan nilai asli, layanan harus meminta detokenisasi melalui pemeriksaan identitas, otorisasi, alasan akses, dan pencatatan audit.</p>
+          </div>
+          <div class="feedback">Tokenisasi berbeda dari hashing: token acak dapat dipetakan kembali melalui vault; hash pada umumnya tidak menyediakan mekanisme pemulihan nilai asli.</div>
+        </div>
+        <div class="feedback warn">
+          Catatan praktikum: database ini adalah simulasi di browser menggunakan penyimpanan lokal (localStorage), bukan server database sungguhan. Jangan masukkan data pribadi nyata. Sistem produksi harus memakai database terpisah,
+          enkripsi, kontrol akses, autentikasi, backup, dan audit log.
+        </div>
+      </section>
+
+      <!-- 4. ENKRIPSI -->
+      <section id="encrypt" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MISI 3 · 100 XP</span>
+            <h2>🔐 The Cipher Gate</h2>
+            <p class="muted">Demonstrasi enkripsi AES-GCM menggunakan Web Crypto API di browser.</p>
+            <label>Pesan fiktif (plaintext)</label>
+            <input id="plainInput" value="NILAI AKADEMIK RAHASIA" />
+            <div class="actionrow">
+              <button class="btn primary" onclick="encryptText()">🔒 Enkripsi pesan</button>
+              <button class="btn" onclick="decryptText()">🔓 Dekripsi</button>
+            </div>
+            <div class="result" style="margin-top: 12px">
+              <div class="muted">CIPHERTEXT (BASE64)</div>
+              <div id="cipherOutput" class="code" style="font-size: 12px">Belum dienkripsi</div>
+            </div>
+            <div class="result" style="margin-top: 10px">
+              <div class="muted">HASIL DEKRIPSI</div>
+              <div id="decryptOutput" class="code">—</div>
+            </div>
+            <div class="feedback" id="encryptFeedback">Enkripsi melindungi data saat transit maupun storage.</div>
+          </div>
+          <div class="panel">
+            <span class="tag">KONSEP KUNCI</span>
+            <h3>Plaintext → Ciphertext</h3>
+            <div class="lock">📄 → 🔐 → 🧩</div>
+            <div class="mission">
+              <span>🔑</span>
+              <div>
+                <b>Kunci Kriptografi</b>
+                <div class="muted">Diperlukan untuk proses enkripsi & dekripsi.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🛡️</span>
+              <div>
+                <b>Integritas AES-GCM</b>
+                <div class="muted">Mendeteksi manipulasi data pada ciphertext.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. KLASIFIKASI DATA -->
+      <section id="classify" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MODUL 4 · KLASIFIKASI DATA</span>
+            <h2>🗂️ Data Umum atau Data Spesifik?</h2>
+            <p class="muted">Klasifikasikan contoh data berikut berdasarkan UU PDP No. 27 Tahun 2022.</p>
+            <div class="scenario">
+              <b id="classItem">Nama lengkap</b>
+              <p class="muted" id="classDesc">Identitas perseorangan.</p>
+              <div class="actionrow">
+                <button class="btn" onclick="answerClass('umum')">Data Umum</button>
+                <button class="btn" onclick="answerClass('spesifik')">Data Spesifik</button>
+              </div>
+              <div class="feedback" id="classFeedback">Pilih klasifikasi yang tepat.</div>
+            </div>
+            <div class="meter"><span>PROGRES KLASIFIKASI</span><b id="classCount">0 / 8</b></div>
+            <div class="progress"><span id="classBar"></span></div>
+            <button class="btn primary" onclick="nextClass()" style="margin-top: 12px">Soal berikutnya →</button>
+          </div>
+          <div class="panel">
+            <span class="tag">REFERENSI UU PDP</span>
+            <h3>Kategori Data Pribadi</h3>
+            <p><b>Data Umum:</b> Nama lengkap, jenis kelamin, kewarganegaraan, agama, status perkawinan.</p>
+            <hr style="border-color: var(--line)" />
+            <p><b>Data Spesifik:</b> Kesehatan, biometrik (sidik jari, wajah), genetika, catatan kejahatan, data anak, dan keuangan pribadi.</p>
+            <div class="feedback">Kombinasi data umum tertentu dapat mengidentifikasi seseorang secara spesifik.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. AKTOR & KEPATUHAN (BARU) -->
+      <section id="actors" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MODUL 5 · AKTOR & KEWAJIBAN PDP</span>
+            <h2>👥 Siapa Pemain & Aturannya?</h2>
+            <p class="muted">Uji pemahaman Anda mengenai peran aktor utama PDP dan kewajiban hukum organisasi.</p>
+            <div class="scenario">
+              <b id="actorScenario">Perusahaan ojek online menentukan tujuan dan cara pengumpulan data penumpang. Perusahaan berperan sebagai...</b>
+              <div id="actorOptions"></div>
+              <div class="feedback" id="actorFeedback">Pilih jawaban yang paling tepat.</div>
+            </div>
+            <div class="meter"><span>PROGRES AKTOR</span><b id="actorCount">0 / 3</b></div>
+            <div class="progress"><span id="actorBar"></span></div>
+            <button class="btn primary" onclick="nextActor()" style="margin-top: 12px">Skenario berikutnya →</button>
+          </div>
+          <div class="panel">
+            <span class="tag">RINGKASAN MATERI AKTOR</span>
+            <div class="mission">
+              <span>👤</span>
+              <div>
+                <b>Subjek Data</b>
+                <div class="muted">Pemilik data pribadi (individu perseorangan).</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🏛️</span>
+              <div>
+                <b>Pengendali Data</b>
+                <div class="muted">Pihak yang menentukan tujuan & cara pemrosesan (Arsitek).</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>⚙️</span>
+              <div>
+                <b>Prosesor Data</b>
+                <div class="muted">Pihak yang memproses data atas nama pengendali (Kontraktor, cth: Cloud Provider).</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🚨</span>
+              <div>
+                <b>Batas Waktu Kebocoran</b>
+                <div class="muted">Pengendali wajib melaporkan kebocoran data paling lambat <b>3 x 24 jam</b>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. CONSENT -->
+      <section id="consent" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MODUL 6 · PERSETUJUAN</span>
+            <h2>✍️ Consent Control Room</h2>
+            <p class="muted">Simulasikan permintaan persetujuan (*consent*) yang aktif, spesifik, dan transparan.</p>
+            <label>Nama aplikasi / pengendali</label>
+            <input id="consentController" value="Portal Akademik Kampus" />
+            <label>Tujuan pemrosesan</label>
+            <select id="consentPurpose">
+              <option value="Mengirimkan informasi akademik">Mengirimkan informasi akademik</option>
+              <option value="Mengirimkan promosi dan penawaran">Mengirimkan promosi dan penawaran</option>
+              <option value="Menganalisis penggunaan layanan">Menganalisis penggunaan layanan</option>
+            </select>
+            <label>Data yang diminta</label>
+            <div class="pillrow"><span class="pill">Nama</span><span class="pill">Email</span><span class="pill">Nomor telepon</span></div>
+            <label class="checkline"><input type="checkbox" id="consentAgree" /> Saya memberikan persetujuan secara aktif untuk tujuan yang dipilih.</label>
+            <label class="checkline"><input type="checkbox" id="consentInfo" /> Saya telah membaca informasi tujuan, hak, dan jangka waktu penyimpanan.</label>
+            <div class="scenario">
+              <b>Uji persetujuan per tujuan</b>
+              <p class="muted">Persetujuan untuk satu tujuan tidak otomatis berarti persetujuan untuk tujuan lainnya.</p>
+              <label class="checkline"><input type="checkbox" id="consentMarketing"> Promosi dan penawaran (tujuan terpisah)</label>
+              <label class="checkline"><input type="checkbox" id="consentAnalytics"> Analisis penggunaan layanan (tujuan terpisah)</label>
+            </div>
+            <button class="btn primary" onclick="submitConsent()">Kirim pilihan persetujuan</button>
+            <div class="feedback" id="consentResult">Belum ada keputusan persetujuan.</div>
+          </div>
+          <div class="panel">
+            <span class="tag">UJI PEMAHAMAN</span>
+            <h3>Persetujuan yang Sah</h3>
+            <p>Consent tidak boleh berupa kotak yang sudah dicentang sebelumnya (*pre-ticked boxes*). Harus berupa tindakan afirmatif yang jelas (*clear affirmative act*).</p>
+            <div class="scenario">
+              <b>Prinsip penting</b>
+              <p class="muted">Persetujuan harus spesifik, diinformasikan, diberikan secara sah, dan dapat dibuktikan. Tidak semua pemrosesan data harus selalu menggunakan persetujuan; dasar pemrosesan perlu dinilai sesuai konteks dan UU PDP.</p>
+            </div>
+            <div class="scenario">
+              <b>Simulasi Penarikan Persetujuan</b>
+              <p class="muted">Subjek data berhak mencabut izin kapan saja.</p>
+              <button class="btn" onclick="withdrawConsent()">Tarik persetujuan promosi</button>
+              <div class="feedback" id="withdrawResult">Status: belum ada penarikan.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. HAK SUBJEK DATA -->
+      <section id="rights" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MODUL 7 · HAK SUBJEK DATA</span>
+            <h2>⚖️ Privacy Rights Desk</h2>
+            <p class="muted">Anda bertugas di Data Subject Rights Service Desk. Tinjau tiket permintaan mahasiswa, tentukan hak yang relevan, lalu pilih respons yang tepat.</p>
+            <div class="scenario">
+              <b id="rightScenario">Mahasiswa ingin mengetahui data apa saja yang disimpan portal akademik.</b>
+              <div id="rightOptions"></div>
+              <div class="feedback" id="rightFeedback">Pilih jawaban yang paling tepat.</div>
+            </div>
+            <button class="btn primary" onclick="nextRight()" style="margin-top: 12px">Skenario berikutnya →</button>
+            <div class="meter"><span>PROGRES HAK</span><b id="rightCount">0 / 6</b></div>
+            <div class="progress"><span id="rightBar"></span></div>
+          </div>
+          <div class="panel">
+            <span class="tag">RINGKASAN HAK</span>
+            <div class="mission">
+              <span>📄</span>
+              <div>
+                <b>Informasi & Akses</b>
+                <div class="muted">Mengetahui siapa yang memproses dan meminta salinan data.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>✏️</span>
+              <div>
+                <b>Perbaikan & Pembaruan</b>
+                <div class="muted">Melengkapi atau mengoreksi data yang salah.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>🗑️</span>
+              <div>
+                <b>Penghapusan / Pemusnahan</b>
+                <div class="muted">Meminta data dihapus jika tidak lagi diperlukan.</div>
+              </div>
+            </div>
+            <div class="mission">
+              <span>⚖️</span>
+              <div>
+                <b>Ganti Rugi</b>
+                <div class="muted">Menggugat jika terjadi penyalahgunaan data.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- MISI 4: ACCESS CONTROL -->
+      <section id="access" class="lab">
+        <div class="panel" style="margin-bottom:14px">
+          <span class="tag">MISI 4 · THE GATEKEEPER · 100 XP</span>
+          <h2>🚪 Operasi Gerbang Akses: Amankan SIAKAD!</h2>
+          <p class="muted">Anda bertugas sebagai petugas keamanan SIAKAD. Setiap permintaan akses harus diperiksa berdasarkan <b>peran, tugas, dan cakupan data</b>. Pilih keputusan yang tepat: IZINKAN atau TOLAK. Jangan memberi akses hanya karena seseorang memiliki akun.</p>
+          <div class="grid three" style="gap:9px;margin-top:12px">
+            <div class="stat"><b id="gateRound">0/5</b><span class="sub">Skenario selesai</span></div>
+            <div class="stat"><b id="gateScore">0</b><span class="sub">Skor keputusan</span></div>
+            <div class="stat"><b id="gateStreak">0</b><span class="sub">Streak benar 🔥</span></div>
+          </div>
+          <div style="height:9px;background:var(--line);border-radius:20px;overflow:hidden;margin-top:12px"><div id="gateProgress" style="height:100%;width:0%;background:var(--cyan);transition:width .25s"></div></div>
+        </div>
+        <div class="grid">
+          <div class="panel">
+            <div class="eyebrow">🚨 PERMINTAAN AKSES MASUK</div>
+            <div id="gateScenario">
+              <div class="tag">SIAPKAN POS JAGA</div>
+              <h3>Mulai pemeriksaan akses</h3>
+              <p class="muted">Tekan tombol mulai untuk menerima permintaan akses pertama.</p>
+            </div>
+            <div class="actionrow" style="margin-top:14px">
+              <button class="btn primary" id="gateStartBtn" onclick="startGateGame()">▶ Mulai Operasi</button>
+              <button class="btn" id="gateAllowBtn" onclick="submitGateDecision('allow')" disabled>✅ Izinkan</button>
+              <button class="btn" id="gateDenyBtn" onclick="submitGateDecision('deny')" disabled>⛔ Tolak</button>
+            </div>
+            <div class="feedback" id="gateFeedback" style="margin-top:12px">Target: selesaikan 5 pemeriksaan dan raih minimal 4 keputusan benar.</div>
+            <div class="actionrow"><button class="btn" onclick="resetGateGame()">↻ Ulangi Misi</button></div>
+          </div>
+          <div class="panel">
+            <span class="tag">🧠 INTELIJEN AKSES</span>
+            <h3>Checklist sebelum memberi akses</h3>
+            <div class="result">
+              <p>1. <b>Who?</b> Siapa pemohon dan apa perannya?</p>
+              <p>2. <b>What?</b> Data atau tindakan apa yang diminta?</p>
+              <p>3. <b>Why?</b> Apakah sesuai tugas dan tujuan?</p>
+              <p>4. <b>How much?</b> Apakah aksesnya paling minimum?</p>
+            </div>
+            <h3 style="margin-top:14px">Matriks peran (contoh simulasi)</h3>
+            <div class="result" style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;min-width:390px">
+                <thead><tr style="color:var(--cyan);text-align:left"><th style="padding:7px">Peran</th><th style="padding:7px">Batas akses</th></tr></thead>
+                <tbody>
+                  <tr><td style="padding:7px">Mahasiswa</td><td style="padding:7px">Data akademik milik sendiri</td></tr>
+                  <tr><td style="padding:7px">Dosen</td><td style="padding:7px">Data mahasiswa pada kelas yang diampu</td></tr>
+                  <tr><td style="padding:7px">Operator</td><td style="padding:7px">Administrasi sesuai penugasan</td></tr>
+                  <tr><td style="padding:7px">Administrator</td><td style="padding:7px">Pengelolaan akun dan konfigurasi sistem</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="feedback">Prinsip utama: <b>Least Privilege</b> — berikan hak akses minimum yang diperlukan untuk menjalankan tugas.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MISI 5: AUDIT TRAIL -->
+      <section id="audit" class="lab">
+        <div class="panel" style="margin-bottom:14px">
+          <span class="tag">MISI 5 · DIGITAL FORENSICS · 100 XP</span>
+          <h2>🕵️ Kasus SIAKAD: Siapa Mengakses Data Mahasiswa?</h2>
+          <p class="muted">Pusat operasi keamanan kampus menerima peringatan: sebuah file data mahasiswa diduga diunduh tanpa izin. Anda berperan sebagai auditor digital. Baca jejak aktivitas, susun kronologi, lalu tandai log yang menjadi indikator insiden.</p>
+          <div class="grid three" style="gap:9px;margin-top:12px">
+            <div class="stat"><b id="auditEvidenceCount">0/6</b><span class="sub">Bukti ditemukan</span></div>
+            <div class="stat"><b id="auditCaseScore">0</b><span class="sub">Skor investigasi</span></div>
+            <div class="stat"><b id="auditCaseStatus">BELUM</b><span class="sub">Status kasus</span></div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">📁 BERKAS KASUS #SIakad-042</span>
+            <h3>Briefing insiden</h3>
+            <div class="result">
+              <p><b>Waktu laporan:</b> 09.15 WIB</p>
+              <p><b>Pelapor:</b> Tim Helpdesk Akademik</p>
+              <p><b>Temuan awal:</b> Ada dugaan pengunduhan data mahasiswa dalam jumlah besar dari akun operator.</p>
+              <p><b>Misi Anda:</b> Periksa enam catatan aktivitas. Pilih semua catatan yang menurut Anda merupakan indikator mencurigakan.</p>
+            </div>
+            <button class="btn primary" id="auditLoadBtn" onclick="loadAuditCase()">🔍 Buka bukti digital</button>
+            <div class="feedback" id="auditFeedback" style="margin-top:12px">Kasus belum dibuka. Tekan tombol untuk memuat bukti audit.</div>
+            <div class="actionrow"><button class="btn" onclick="resetAuditCase()">↻ Reset investigasi</button></div>
+          </div>
+          <div class="panel">
+            <span class="tag">🧾 AUDIT TRAIL · TIMELINE</span>
+            <h3>Jejak aktivitas sistem</h3>
+            <p class="muted">Tandai log yang perlu diselidiki lebih lanjut.</p>
+            <div id="auditLog" class="result" style="max-height:520px;overflow:auto">Bukti digital belum dimuat.</div>
+            <button class="btn primary" id="auditSubmitBtn" onclick="submitAuditCase()" disabled>🧠 Kirim hasil investigasi</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <span class="tag">🧩 PETUNJUK INVESTIGASI</span>
+          <div class="grid two">
+            <div class="result"><b>Siapa?</b><p class="muted">Identitas akun atau peran yang melakukan aktivitas.</p></div>
+            <div class="result"><b>Kapan?</b><p class="muted">Waktu akses, termasuk pola di luar jam kerja.</p></div>
+            <div class="result"><b>Dari mana?</b><p class="muted">Alamat IP atau lokasi akses yang tidak biasa.</p></div>
+            <div class="result"><b>Melakukan apa?</b><p class="muted">Jenis tindakan, objek data, dan jumlah data yang diakses.</p></div>
+          </div>
+          <div class="feedback">Ingat: satu log yang tidak biasa belum otomatis membuktikan pelanggaran. Auditor perlu menghubungkan beberapa bukti, memeriksa konteks, dan menjaga keutuhan log.</div>
+        </div>
+      </section>
+
+      <!-- MISI 6: BREACH RESPONSE -->
+      <section id="breach" class="lab">
+        <div class="panel" style="margin-bottom:14px">
+          <span class="tag">MISI 6 · INCIDENT COMMANDER · 100 XP</span>
+          <h2>🚨 Krisis Kebocoran Data: Pimpin Respons Insiden!</h2>
+          <p class="muted">Anda adalah Incident Commander kampus. Dalam simulasi ini, keputusan Anda menentukan apakah insiden dapat dikendalikan, bukti tetap aman, dan hak subjek data terlindungi.</p>
+          <div class="grid three" style="gap:9px">
+            <div class="stat"><b id="breachStage">0/5</b><span class="sub">Tahap respons</span></div>
+            <div class="stat"><b id="breachPoints">0</b><span class="sub">Poin keputusan</span></div>
+            <div class="stat"><b id="breachImpact">STABIL</b><span class="sub">Status insiden</span></div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">📟 RUANG KENDALI INSIDEN</span>
+            <div id="breachScenario">
+              <h3>📨 Panggilan darurat dari SOC</h3>
+              <p class="muted">Pukul 09.20 WIB, tim keamanan menerima laporan bahwa tautan ekspor data mahasiswa dapat diakses dari internet.</p>
+              <div class="result"><b>Data terindikasi:</b> nama, NIM, email kampus, nomor telepon, dan informasi akademik.</div>
+              <button class="btn primary" onclick="startBreachGame()">▶ Ambil alih komando</button>
+            </div>
+            <div class="feedback" id="breachFeedback">Baca setiap perkembangan dan pilih tindakan paling tepat. Anda akan menerima konsekuensi dari setiap keputusan.</div>
+          </div>
+          <div class="panel">
+            <span class="tag">🗺️ PETA RESPONS</span>
+            <div id="breachTimeline">
+              <div class="mission"><span>1</span><div><b>Deteksi & verifikasi</b><div class="muted">Pastikan laporan dan ruang lingkup awal.</div></div></div>
+              <div class="mission"><span>2</span><div><b>Containment</b><div class="muted">Batasi akses dan cegah dampak meluas.</div></div></div>
+              <div class="mission"><span>3</span><div><b>Preservasi & investigasi</b><div class="muted">Jaga bukti, log, dan kronologi.</div></div></div>
+              <div class="mission"><span>4</span><div><b>Penilaian & notifikasi</b><div class="muted">Identifikasi data/subjek terdampak dan siapkan pemberitahuan sesuai ketentuan.</div></div></div>
+              <div class="mission"><span>5</span><div><b>Pemulihan & evaluasi</b><div class="muted">Pulihkan layanan dan cegah pengulangan.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL KONSEP: PRINCIPLES -->
+      <section id="principles" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MODUL KONSEP 5</span>
+            <h2>📚 Prinsip Pemrosesan Data Pribadi</h2>
+            <p class="muted">Anda menjadi auditor privasi. Periksa bukti pada setiap kasus dan identifikasi prinsip pemrosesan yang perlu diterapkan.</p>
+            <div class="scenario">
+              <b id="principleQuestion">Portal akademik hanya meminta data yang diperlukan untuk pendaftaran mata kuliah.</b>
+              <div id="principleOptions"></div>
+              <div class="feedback" id="principleFeedback">Pilih jawaban yang paling tepat.</div>
+            </div>
+            <div class="meter"><span>PROGRES MODUL</span><b id="principleCount">0 / 6</b></div>
+            <div class="progress"><span id="principleBar"></span></div>
+            <button class="btn primary" onclick="nextPrinciple()">Contoh berikutnya →</button>
+          </div>
+          <div class="panel">
+            <span class="tag">RINGKASAN</span>
+            <h3>Prinsip yang perlu diperhatikan</h3>
+            <ul class="muted">
+              <li>Tujuan pemrosesan harus jelas dan sah.</li>
+              <li>Data yang dikumpulkan relevan dan tidak berlebihan.</li>
+              <li>Informasi pemrosesan disampaikan secara transparan.</li>
+              <li>Data dijaga akurasi, keamanan, dan masa simpannya.</li>
+            </ul>
+            <div class="feedback">Prinsip ini menjadi panduan saat organisasi merancang formulir, basis data, dan proses layanan.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODUL KONSEP: PRIVACY BY DESIGN -->
+      <section id="privacy" class="lab">
+        <div class="grid">
+          <div class="panel">
+            <span class="tag">MODUL KONSEP 6 · SIMULASI DESAIN</span>
+            <h2>🏗️ Secure System Architect</h2>
+            <p class="muted">Anda menjadi arsitek aplikasi konsultasi akademik. Ambil keputusan pada empat tahap perancangan agar privasi terlindungi sejak awal.</p>
+            <div class="meter"><b id="privacyStage">Tahap 1 · Kebutuhan data</b><span id="privacyProgressText">1 / 4</span></div>
+            <div class="progress"><span id="privacyProgressBar"></span></div>
+            <div class="scenario">
+              <b id="privacyQuestion">Pertanyaan rancangan</b>
+              <div id="privacyOptions"></div>
+              <div class="feedback" id="privacyFeedback">Pilih rancangan yang paling melindungi data pribadi.</div>
+              <button class="btn primary" id="privacyNext" onclick="nextPrivacyStage()" disabled>Tahap berikutnya →</button>
+            </div>
+          </div>
+          <div class="panel">
+            <span class="tag">ARSITEKTUR PRIVASI</span>
+            <h3>Empat kontrol utama</h3>
+            <div class="mission"><span>🔎</span><div><b>Minimalisasi data</b><div class="muted">Kumpulkan data sesuai kebutuhan tujuan.</div></div></div>
+            <div class="mission"><span>🔐</span><div><b>Kontrol akses</b><div class="muted">Batasi akses sesuai peran dan kebutuhan.</div></div></div>
+            <div class="mission"><span>⚙️</span><div><b>Privacy by default</b><div class="muted">Lindungi data sejak konfigurasi awal.</div></div></div>
+            <div class="mission"><span>🧹</span><div><b>Siklus hidup data</b><div class="muted">Atur keamanan, retensi, dan penghapusan.</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FINAL BOSS -->
+      <section id="quiz" class="lab">
+        <div class="panel">
+          <span class="tag">FINAL BOSS · 12 TANTANGAN · 300 XP</span>
+          <h2>🏆 Privacy Defender: Ujian Akhir Penjaga Data</h2>
+          <p class="muted">Anda menghadapi 12 tantangan dari seluruh enam misi teknis dan enam modul konsep. Jawab seluruh soal, baca pembahasan, dan buktikan bahwa Anda siap menjaga data pribadi di lingkungan kampus.</p>
+          <div class="grid three" style="gap:9px;margin:12px 0">
+            <div class="stat"><b id="bossProgress">0/12</b><span class="sub">Terjawab</span></div>
+            <div class="stat"><b id="bossScore">0</b><span class="sub">Jawaban benar</span></div>
+            <div class="stat"><b id="bossRank">CADET</b><span class="sub">Peringkat</span></div>
+          </div>
+          <div class="progress"><span id="bossBar" style="width:0%"></span></div>
+          <div id="questions"></div>
+          <div class="feedback" id="quizFeedback">Selesaikan 12 tantangan untuk memperoleh peringkat Privacy Defender.</div>
+          <button class="btn primary" onclick="gradeQuiz()" style="margin-top:12px">⚔️ Evaluasi seluruh jawaban</button>
+          <button class="btn" onclick="resetBoss()" style="margin-top:12px">↻ Ulangi Boss Challenge</button>
+        </div>
+      </section>
+
+
+
+      <!-- LAPORAN HASIL PRAKTIKUM -->
+      <section id="report" class="lab">
+        <div class="panel" id="reportPrint">
+          <span class="tag">LAPORAN HASIL PRAKTIKUM · MINGGU 08</span>
+          <h2>📄 Data Guardian Academy — Rekap Hasil Belajar</h2>
+          <p class="muted">Dasar Keamanan Siber · Praktikum Perlindungan Data Pribadi</p>
+          <div class="grid three">
+            <div class="result"><span class="muted">Nama</span><h3 id="reportName">Belum diisi</h3></div>
+            <div class="result"><span class="muted">NIM</span><h3 id="reportNim">Belum diisi</h3></div>
+            <div class="result"><span class="muted">Kelas</span><h3 id="reportClass">Belum diisi</h3></div>
+          </div>
+          <div class="grid three" style="margin-top:12px">
+            <div class="stat"><b id="reportGrade">0</b><span class="sub">Nilai akhir / 100</span></div>
+            <div class="stat"><b id="reportXp">0 XP</b><span class="sub">Total pengalaman</span></div>
+            <div class="stat"><b id="reportRank">Belum dinilai</b><span class="sub">Predikat akhir</span></div>
+            <div class="stat"><b id="reportMissionStars" style="color:#ffd43b">☆☆☆</b><span class="sub">Bintang misi</span></div>
+            <div class="stat"><b id="reportModuleStars" style="color:#ffd43b">☆☆☆</b><span class="sub">Bintang modul</span></div>
+          </div>
+          <h3 style="margin-top:18px">Rincian penilaian</h3>
+          <div class="result" style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;min-width:420px">
+              <thead><tr style="text-align:left"><th style="padding:8px">Komponen</th><th style="padding:8px">Capaian</th><th style="padding:8px">Bobot</th><th style="padding:8px">Nilai kontribusi</th></tr></thead>
+              <tbody id="reportBreakdown"></tbody>
+            </table>
+          </div>
+          <h3 style="margin-top:18px">Status misi dan modul</h3>
+          <div class="grid two">
+            <div><b>Enam misi teknis</b><div id="reportMissions" class="result"></div></div>
+            <div><b>Enam modul konsep</b><div id="reportModules" class="result"></div></div>
+          </div>
+          <p class="muted" style="margin-top:14px">Catatan: Nilai dihitung dari penyelesaian misi (60%), modul konsep (20%), dan Boss Challenge (20%). Laporan ini dibuat dari progres lokal pada browser/perangkat yang digunakan.</p>
+          <p class="muted" id="reportDate"></p>
+        </div>
+        <div class="actionrow no-print">
+          <button class="btn primary" onclick="printStudentReport()">🖨️ Cetak / Simpan sebagai PDF</button>
+          <button class="btn" onclick="go('brief')">Kembali ke praktikum</button>
+        </div>
+      </section>
+
+      <div class="reset-row">
+        <button class="btn" onclick="resetProgress()" style="color: var(--pink); border-color: #5a2838">🔄 Reset Progres Belajar</button>
+      </div>
+    </main>
+
+    <footer>DATA GUARDIAN ACADEMY · Praktikum PDP Minggu 08 · Politeknik Negeri Batam<br>Simulasi edukatif dengan data fiktif; bukan sistem produksi atau nasihat hukum.</footer>
+
+    <script>
+      let xp = 0,
+        done = new Set(),
+        tokenValue = null,
+        tokenOriginal = null,
+        cryptoKey = null,
+        iv = null,
+        cipher = null,
+        quizGraded = false;
+
+      // Load Progres dari LocalStorage saat halaman dibuka
+      function loadProgress() {
+        let savedXp = localStorage.getItem("dga_xp");
+        let savedDone = localStorage.getItem("dga_done");
+        if (savedXp) xp = parseInt(savedXp);
+        if (savedDone) {
+          try {
+            done = new Set(JSON.parse(savedDone));
+          } catch (e) {
+            done = new Set();
+          }
+        }
+        update();
+      }
+
+      function saveProgress() {
+        localStorage.setItem("dga_xp", xp);
+        localStorage.setItem("dga_done", JSON.stringify(Array.from(done)));
+      }
+
+      let studentIdentity = {name:"", nim:"", className:""};
+      function setIdentityLocked(locked) {
+        ["studentName","studentNim","studentClass"].forEach(id => {
+          document.getElementById(id).disabled = locked;
+        });
+        document.getElementById("saveIdentityBtn").style.display = locked ? "none" : "inline-block";
+        document.getElementById("editIdentityBtn").style.display = locked ? "inline-block" : "none";
+      }
+      function loadStudentIdentity() {
+        try {
+          const saved = JSON.parse(localStorage.getItem("dga_student") || '{"name":"","nim":"","className":""}');
+          studentIdentity = saved && typeof saved === "object" ? saved : {name:"",nim:"",className:""};
+        } catch (e) { studentIdentity = {name:"",nim:"",className:""}; }
+        document.getElementById("studentName").value = studentIdentity.name || "";
+        document.getElementById("studentNim").value = studentIdentity.nim || "";
+        document.getElementById("studentClass").value = studentIdentity.className || "";
+        const locked = !!(studentIdentity.name && studentIdentity.nim && studentIdentity.className);
+        setIdentityLocked(locked);
+        document.getElementById("identityFeedback").textContent = locked
+          ? "Identitas terkunci. Untuk menggantinya, seluruh progres permainan akan direset."
+          : "Isi identitas lalu simpan. Identitas akan terkunci selama permainan berlangsung.";
+        updateStudentReport();
+      }
+      function saveStudentIdentity() {
+        const next = {
+          name: document.getElementById("studentName").value.trim(),
+          nim: document.getElementById("studentNim").value.trim(),
+          className: document.getElementById("studentClass").value.trim()
+        };
+        if (!next.name || !next.nim || !next.className) {
+          document.getElementById("identityFeedback").textContent = "Lengkapi nama, NIM, dan kelas terlebih dahulu.";
+          return;
+        }
+        localStorage.setItem("dga_student", JSON.stringify(next));
+        studentIdentity = next;
+        setIdentityLocked(true);
+        document.getElementById("identityFeedback").textContent = "Identitas berhasil disimpan dan dikunci untuk sesi permainan ini.";
+        updateStudentReport();
+      }
+      function requestIdentityChange() {
+        const ok = confirm("PERINGATAN: Mengganti identitas mahasiswa akan menghapus SELURUH progres permainan ini, termasuk XP, bintang, misi, modul, nilai evaluasi, dan data simulasi. Setelah reset, Anda harus mengisi identitas baru dan memulai dari awal. Lanjutkan?");
+        if (!ok) return;
+        try {
+          const keys = [];
+          for (let i=0;i<localStorage.length;i++) {
+            const key=localStorage.key(i);
+            if (key && key.startsWith("dga_")) keys.push(key);
+          }
+          keys.forEach(key=>localStorage.removeItem(key));
+          window.location.reload();
+        } catch (err) {
+          alert("Browser membatasi penghapusan data. Silakan buka file di Chrome atau Edge lalu coba kembali.");
+        }
+      }
+      function updateStudentReport() {
+        if (!document.getElementById("reportName")) return;
+        const ids = ["mask","token","encrypt","access","audit","breach"];
+        const labels = ["Masking","Tokenisasi","Enkripsi","Access Control","Audit Trail","Breach Response"];
+        const moduleIds = ["classify","actors","consent","rights","principles","privacy"];
+        const moduleLabels = ["Klasifikasi Data","Aktor & Kepatuhan","Consent","Hak Subjek Data","Prinsip Pemrosesan","Privacy by Design"];
+        const missionDone = ids.filter(id=>done.has(id)).length;
+        const moduleDone = moduleIds.filter(id=>done.has(id)).length;
+        const bossRaw = localStorage.getItem("dga_boss_score");
+        const bossScore = bossRaw === null ? 0 : Math.max(0,Math.min(12,Number(bossRaw)||0));
+        const missionContribution = missionDone/6*60;
+        const moduleContribution = moduleDone/6*20;
+        const bossContribution = bossScore/12*20;
+        const total = Math.round(missionContribution+moduleContribution+bossContribution);
+        const rank = total>=90?"Sangat Baik":total>=80?"Baik":total>=70?"Cukup":total>0?"Perlu Peningkatan":"Belum dinilai";
+        document.getElementById("reportName").textContent = studentIdentity.name || "Belum diisi";
+        document.getElementById("reportNim").textContent = studentIdentity.nim || "Belum diisi";
+        document.getElementById("reportClass").textContent = studentIdentity.className || "Belum diisi";
+        document.getElementById("reportGrade").textContent = total;
+        document.getElementById("reportXp").textContent = xp+" XP";
+        document.getElementById("reportRank").textContent = rank;
+        const earnedMissionStars = Math.min(3, Math.floor(missionDone / 2));
+        const earnedModuleStars = Math.min(3, Math.floor(moduleDone / 2));
+        document.getElementById("reportMissionStars").textContent = "★".repeat(earnedMissionStars) + "☆".repeat(3-earnedMissionStars);
+        document.getElementById("reportModuleStars").textContent = "★".repeat(earnedModuleStars) + "☆".repeat(3-earnedModuleStars);
+        document.getElementById("reportBreakdown").innerHTML =
+          `<tr><td style="padding:8px">Misi teknis</td><td style="padding:8px">${missionDone}/6 selesai</td><td style="padding:8px">60%</td><td style="padding:8px">${missionContribution.toFixed(1)}</td></tr>`+
+          `<tr><td style="padding:8px">Modul konsep</td><td style="padding:8px">${moduleDone}/6 selesai</td><td style="padding:8px">20%</td><td style="padding:8px">${moduleContribution.toFixed(1)}</td></tr>`+
+          `<tr><td style="padding:8px">Boss Challenge</td><td style="padding:8px">${bossRaw===null?"Belum dikerjakan":bossScore+"/12 benar"}</td><td style="padding:8px">20%</td><td style="padding:8px">${bossContribution.toFixed(1)}</td></tr>`+
+          `<tr><td colspan="3" style="padding:8px"><b>Nilai akhir</b></td><td style="padding:8px"><b>${total}/100</b></td></tr>`;
+        document.getElementById("reportMissions").innerHTML=labels.map((v,i)=>`${done.has(ids[i])?"✅":"⬜"} ${v}`).join("<br>");
+        document.getElementById("reportModules").innerHTML=moduleLabels.map((v,i)=>`${done.has(moduleIds[i])?"✅":"⬜"} ${v}`).join("<br>");
+        document.getElementById("reportDate").textContent="Tanggal laporan: "+new Date().toLocaleString("id-ID");
+      }
+      function printStudentReport() {
+        const name = document.getElementById("studentName").value.trim();
+        const nim = document.getElementById("studentNim").value.trim();
+        const className = document.getElementById("studentClass").value.trim();
+        if (!name || !nim || !className) {
+          document.getElementById("identityFeedback").textContent = "Lengkapi nama, NIM, dan kelas sebelum mencetak laporan.";
+          alert("Lengkapi nama, NIM, dan kelas pada bagian Identitas Peserta Praktikum.");
+          return;
+        }
+        studentIdentity = {name, nim, className};
+        localStorage.setItem("dga_student", JSON.stringify(studentIdentity));
+        document.getElementById("identityFeedback").textContent = "Identitas berhasil disimpan pada browser ini.";
+        updateStudentReport();
+        window.print();
+      }
+
+      function resetProgress() {
+        const approved = confirm("Reset seluruh progres belajar? XP, lencana, hasil evaluasi, dan data simulasi Token Vault akan dikosongkan.");
+        if (!approved) return;
+        try {
+          // Hapus hanya data milik Data Guardian Academy, tanpa menyentuh data situs lain.
+          const appKeys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("dga_")) appKeys.push(key);
+          }
+          appKeys.forEach(key => localStorage.removeItem(key));
+          // Hapus juga kunci utama secara eksplisit sebagai pengaman.
+          ["dga_xp", "dga_done", "dga_token_vault", "dga_token_logs", "dga_app_token_records"].forEach(key => localStorage.removeItem(key));
+          xp = 0;
+          done.clear();
+          // Muat ulang agar seluruh status sementara pada semua misi/modul/Boss kembali ke awal.
+          alert("Seluruh progres Data Guardian Academy berhasil direset.");
+          window.location.reload();
+        } catch (err) {
+          // Fallback bila browser membatasi akses penyimpanan lokal.
+          xp = 0;
+          done.clear();
+          update();
+          alert("Progres tampilan direset, tetapi browser membatasi penghapusan penyimpanan lokal. Buka file di Chrome/Edge biasa lalu coba kembali.");
+        }
+      }
+
+      function update() {
+        document.getElementById("xp").textContent = xp + " XP";
+        document.getElementById("level").textContent = 1 + Math.floor(xp / 100);
+        const missionIds = ["mask", "token", "encrypt", "access", "audit", "breach"];
+        const missionCount = missionIds.filter((id) => done.has(id)).length;
+        document.getElementById("progressText").textContent = missionCount + " / 6";
+        document.getElementById("progressBar").style.width = (missionCount / 6) * 100 + "%";
+        const conceptIds = ["classify","actors","consent","rights","principles","privacy"];
+        const conceptCount = conceptIds.filter((id) => done.has(id)).length;
+        document.getElementById("conceptProgressText").textContent = conceptCount + " / 6";
+        document.getElementById("conceptProgressBar").style.width = (conceptCount / 6) * 100 + "%";
+        const bossScoreStored = localStorage.getItem("dga_boss_score");
+        const bossEvaluated = bossScoreStored !== null;
+        const bossScoreValue = bossEvaluated ? Math.max(0,Math.min(12,Number(bossScoreStored)||0)) : 0;
+        document.getElementById("evaluationProgressText").textContent = bossEvaluated ? bossScoreValue + " / 12 benar" : "Belum dikerjakan";
+        document.getElementById("evaluationProgressBar").style.width = bossEvaluated ? (bossScoreValue/12*100) + "%" : "0%";
+        document.getElementById("summaryMission").textContent = missionCount + "/6";
+        document.getElementById("summaryConcept").textContent = conceptCount + "/6";
+        document.getElementById("summaryEvaluation").textContent = bossEvaluated ? bossScoreValue + "/12" : "0/12";
+        const missionStars = Math.min(3, Math.floor(missionCount / 2));
+        const conceptStars = Math.min(3, Math.floor(conceptCount / 2));
+        document.getElementById("stars").textContent = "★".repeat(missionStars + conceptStars) + "☆".repeat(6 - missionStars - conceptStars);
+        saveProgress();
+        updateStudentReport();
+      }
+
+      function award(id, n) {
+        if (!done.has(id)) {
+          done.add(id);
+          xp += n;
+          update();
+        }
+      }
+
+      function go(id) {
+        document.querySelectorAll(".lab").forEach((x) => x.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        document.querySelectorAll(".nav button").forEach((b) => b.classList.toggle("active", b.dataset.tab === id));
+        if (id === "report") updateStudentReport();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      document.querySelectorAll(".nav button").forEach((b) => b.addEventListener("click", () => go(b.dataset.tab)));
+
+      // Masking Logic
+      function doMask() {
+        let v = document.getElementById("maskInput").value.trim(),
+          n = +document.getElementById("maskMode").value;
+        if (!v) {
+          document.getElementById("maskFeedback").textContent = "Masukkan data contoh terlebih dahulu.";
+          return;
+        }
+        let out = n === 0 ? "•".repeat(Math.min(v.length, 12)) : v.slice(0, n) + "•".repeat(Math.max(3, v.length - n * 2)) + v.slice(-2);
+        document.getElementById("beforeMask").textContent = v;
+        document.getElementById("afterMask").textContent = out;
+        document.getElementById("maskResult").innerHTML = "Hasil masking: <strong>" + out + "</strong>";
+        document.getElementById("maskFeedback").textContent = "Tepat! Tampilan disamarkan, namun data asli tetap ada di sistem.";
+        award("mask", 100);
+      }
+
+      // Tokenization Logic — end-to-end educational simulation
+      // App database stores token references only; Token Vault stores token-to-original mapping.
+      let tokenVault = [];
+      let appTokenRecords = [];
+      let tokenLogs = [];
+
+      function escapeTokenHTML(value) {
+        return String(value).replace(/[&<>"']/g, ch => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[ch]));
+      }
+      function loadTokenVault() {
+        try { tokenVault = JSON.parse(localStorage.getItem("dga_token_vault") || "[]"); }
+        catch (e) { tokenVault = []; }
+        try { tokenLogs = JSON.parse(localStorage.getItem("dga_token_logs") || "[]"); }
+        catch (e) { tokenLogs = []; }
+        try { appTokenRecords = JSON.parse(localStorage.getItem("dga_app_token_records") || "[]"); }
+        catch (e) { appTokenRecords = []; }
+        renderTokenVault();
+        renderAppTokenRecords();
+      }
+      function saveTokenVault() {
+        localStorage.setItem("dga_token_vault", JSON.stringify(tokenVault));
+        localStorage.setItem("dga_token_logs", JSON.stringify(tokenLogs.slice(0, 30)));
+        localStorage.setItem("dga_app_token_records", JSON.stringify(appTokenRecords));
+      }
+      function addTokenLog(action, token, note) {
+        tokenLogs.unshift({
+          time: new Date().toLocaleString("id-ID"),
+          actor: document.getElementById("vaultRole")?.selectedOptions?.[0]?.textContent || "Layanan Tokenisasi",
+          action, token, note
+        });
+        tokenLogs = tokenLogs.slice(0, 30);
+        saveTokenVault();
+        renderTokenLogs();
+      }
+      function makeToken() {
+        const original = document.getElementById("tokenInput").value.trim();
+        const type = document.getElementById("tokenType").value;
+        const feedback = document.getElementById("tokenFeedback");
+        if (!original) {
+          feedback.textContent = "Masukkan data contoh terlebih dahulu.";
+          return;
+        }
+        if (!window.crypto || !crypto.getRandomValues) {
+          feedback.textContent = "Browser tidak mendukung pembangkit token acak.";
+          return;
+        }
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        const newToken = "TKN-" + Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+
+        // Simpan pemetaan di vault, dan hanya referensi token di database aplikasi.
+        const created = new Date().toISOString();
+        tokenVault.unshift({ token: newToken, type, original, created, status: "Aktif" });
+        appTokenRecords.unshift({ token: newToken, type, created, status: "Aktif" });
+        tokenValue = newToken;
+        tokenOriginal = original;
+
+        document.getElementById("tokenOutput").textContent = newToken;
+        document.getElementById("appTokenRecord").textContent = newToken;
+        feedback.textContent = "Token berhasil dibuat. Token dikirim ke database aplikasi; pemetaan token dan data asli disimpan terpisah di Token Vault.";
+        addTokenLog("TOKEN CREATED", newToken, "Pemetaan disimpan di vault; referensi token disimpan di aplikasi");
+        renderTokenVault();
+        renderAppTokenRecords();
+        award("token", 100);
+      }
+      function renderAppTokenRecords() {
+        const rows = document.getElementById("appTokenRows");
+        if (!rows) return;
+        rows.innerHTML = appTokenRecords.length ? appTokenRecords.map(r =>
+          `<tr style="border-bottom:1px solid var(--line)">
+            <td style="padding:9px;font-family:monospace;color:var(--cyan)">${escapeTokenHTML(r.token)}</td>
+            <td style="padding:9px">${escapeTokenHTML(r.type)}</td>
+            <td style="padding:9px">${escapeTokenHTML(new Date(r.created).toLocaleString("id-ID"))}</td>
+            <td style="padding:9px">${escapeTokenHTML(r.status)}</td>
+          </tr>`
+        ).join("") : '<tr><td colspan="4" class="muted" style="padding:12px">Belum ada token pada aplikasi.</td></tr>';
+      }
+      function renderTokenVault() {
+        const rows = document.getElementById("vaultRows");
+        if (!rows) return;
+        document.getElementById("vaultCount").textContent = tokenVault.length + " record tersimpan";
+        rows.innerHTML = tokenVault.length ? tokenVault.map(r =>
+          `<tr style="border-bottom:1px solid var(--line)">
+            <td style="padding:10px;font-family:monospace;color:var(--cyan)">${escapeTokenHTML(r.token)}</td>
+            <td style="padding:10px">${escapeTokenHTML(r.type)}</td>
+            <td style="padding:10px;font-family:monospace">${escapeTokenHTML(maskVaultValue(r.original))}</td>
+            <td style="padding:10px"><span class="badge">${escapeTokenHTML(r.status)}</span></td>
+            <td style="padding:10px;white-space:nowrap">
+              <button class="btn" onclick="lookupVault('${r.token}')">🔎 Detokenisasi</button>
+              <button class="btn" onclick="revokeToken('${r.token}')" ${r.status !== "Aktif" ? "disabled" : ""}>⛔ Cabut</button>
+            </td>
+          </tr>`
+        ).join("") : '<tr><td colspan="5" class="muted" style="padding:14px;text-align:center">Database masih kosong. Buat token untuk menambahkan record.</td></tr>';
+        renderTokenLogs();
+      }
+      function maskVaultValue(value) {
+        const v = String(value);
+        if (v.length < 5) return "•".repeat(v.length);
+        return v.slice(0, 2) + "•".repeat(Math.min(8, v.length - 4)) + v.slice(-2);
+      }
+      function lookupVault(token) {
+        const record = tokenVault.find(r => r.token === token);
+        const out = document.getElementById("vaultLookupResult");
+        const role = document.getElementById("vaultRole")?.value || "student";
+        if (!record) {
+          out.textContent = "Record tidak ditemukan.";
+          addTokenLog("LOOKUP FAILED", token, "Token tidak ditemukan");
+          return;
+        }
+        if (role !== "vault_operator") {
+          out.textContent = "⛔ Akses ditolak. Hanya Petugas Vault yang berwenang dapat melakukan detokenisasi pada simulasi ini.";
+          addTokenLog("ACCESS DENIED", token, "Percobaan detokenisasi tanpa kewenangan");
+          return;
+        }
+        if (record.status !== "Aktif") {
+          out.textContent = "⛔ Token sudah dicabut. Detokenisasi tidak dapat dilakukan.";
+          addTokenLog("LOOKUP BLOCKED", token, "Token berstatus dicabut");
+          return;
+        }
+        out.innerHTML = "🔓 <b>Detokenisasi berhasil (simulasi):</b><br>Token: <b>" +
+          escapeTokenHTML(record.token) + "</b><br>Jenis data: " + escapeTokenHTML(record.type) +
+          '<br>Data asli: <b class="good">' + escapeTokenHTML(record.original) +
+          '</b><br><span class="muted">Akses dicatat pada Access Log.</span>';
+        addTokenLog("DETOKENIZATION", token, "Petugas Vault mengakses pemetaan dengan kewenangan simulasi");
+      }
+      function revokeToken(token) {
+        const record = tokenVault.find(r => r.token === token);
+        if (!record) return;
+        const role = document.getElementById("vaultRole")?.value || "student";
+        if (role !== "vault_operator") {
+          document.getElementById("vaultLookupResult").textContent = "⛔ Akses ditolak. Hanya Petugas Vault yang berwenang dapat mencabut token.";
+          addTokenLog("REVOKE DENIED", token, "Percobaan pencabutan tanpa kewenangan");
+          return;
+        }
+        if (record.status !== "Aktif") return;
+        record.status = "Dicabut";
+        const appRecord = appTokenRecords.find(r => r.token === token);
+        if (appRecord) appRecord.status = "Dicabut";
+        document.getElementById("vaultLookupResult").textContent = "Token " + token + " berhasil dicabut. Token tidak dapat digunakan untuk detokenisasi.";
+        addTokenLog("TOKEN REVOKED", token, "Petugas Vault mencabut token");
+        renderTokenVault();
+        renderAppTokenRecords();
+      }
+      function revealToken() {
+        if (!tokenValue) {
+          document.getElementById("tokenFeedback").textContent = "Buat token terlebih dahulu, lalu pilih Detokenisasi pada tabel vault.";
+          return;
+        }
+        lookupVault(tokenValue);
+      }
+      function renderTokenLogs() {
+        const el = document.getElementById("vaultLogs");
+        if (!el) return;
+        el.innerHTML = tokenLogs.length ? tokenLogs.map(l =>
+          `<div style="padding:7px 0;border-bottom:1px solid var(--line)">
+            <b>${escapeTokenHTML(l.action)}</b> · <span class="code" style="font-size:11px">${escapeTokenHTML(l.token)}</span><br>
+            <span class="muted">${escapeTokenHTML(l.time)} — ${escapeTokenHTML(l.actor || "Sistem")}: ${escapeTokenHTML(l.note)}</span>
+          </div>`
+        ).join("") : "Belum ada aktivitas.";
+      }
+      function resetToken() {
+        tokenValue = null;
+        tokenOriginal = null;
+        document.getElementById("tokenOutput").textContent = "TKN-••••••";
+        document.getElementById("tokenFeedback").textContent = "Token terakhir direset dari tampilan. Record di aplikasi dan vault tetap tersimpan.";
+      }
+      function clearTokenVault() {
+        try {
+          tokenVault = [];
+          appTokenRecords = [];
+          tokenLogs = [];
+          tokenValue = null;
+          tokenOriginal = null;
+          localStorage.removeItem("dga_token_vault");
+          localStorage.removeItem("dga_token_logs");
+          localStorage.removeItem("dga_app_token_records");
+          document.getElementById("tokenOutput").textContent = "TKN-••••••";
+          document.getElementById("appTokenRecord").textContent = "Belum ada token";
+          document.getElementById("vaultLookupResult").textContent = "Database aplikasi, Token Vault, dan Access Log telah dikosongkan.";
+          document.getElementById("tokenFeedback").textContent = "Data simulasi berhasil dikosongkan.";
+          renderTokenVault();
+          renderAppTokenRecords();
+          renderTokenLogs();
+        } catch (err) {
+          console.error("Gagal mengosongkan Token Vault:", err);
+          document.getElementById("tokenFeedback").textContent = "Reset gagal: " + err.message;
+        }
+      }
+      document.addEventListener("DOMContentLoaded", function () {
+        const clearButton = document.getElementById("clearTokenVaultBtn");
+        if (clearButton) clearButton.addEventListener("click", clearTokenVault);
+      });
+
+      // Encryption Logic (Web Crypto API)
+      const enc = new TextEncoder(),
+        dec = new TextDecoder();
+      let b64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b)));
+      async function encryptText() {
+        try {
+          if (!crypto.subtle) throw Error("Web Crypto tidak tersedia.");
+          let text = document.getElementById("plainInput").value;
+          iv = crypto.getRandomValues(new Uint8Array(12));
+          cryptoKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+          cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cryptoKey, enc.encode(text));
+          document.getElementById("cipherOutput").textContent = b64(cipher);
+          document.getElementById("decryptOutput").textContent = "—";
+          document.getElementById("encryptFeedback").textContent = "Berhasil dienkripsi dengan AES-256-GCM.";
+          award("encrypt", 100);
+        } catch (e) {
+          document.getElementById("encryptFeedback").textContent = e.message;
+        }
+      }
+      async function decryptText() {
+        if (!cipher || !cryptoKey) {
+          document.getElementById("encryptFeedback").textContent = "Enkripsi pesan terlebih dahulu.";
+          return;
+        }
+        try {
+          let p = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, cryptoKey, cipher);
+          document.getElementById("decryptOutput").textContent = dec.decode(p);
+          document.getElementById("encryptFeedback").textContent = "Dekripsi berhasil!";
+        } catch (e) {
+          document.getElementById("encryptFeedback").textContent = "Dekripsi gagal: kunci atau ciphertext salah.";
+        }
+      }
+
+      // Klasifikasi Data
+      const classItems = [
+        ["Nama lengkap", "Identitas perseorangan.", "umum"],
+        ["Jenis kelamin", "Informasi demografis.", "umum"],
+        ["Agama", "Keyakinan atau agama.", "umum"],
+        ["Status perkawinan", "Status pernikahan seseorang.", "umum"],
+        ["Data kesehatan", "Riwayat medis atau diagnosis.", "spesifik"],
+        ["Data biometrik", "Sidik jari atau pengenalan wajah.", "spesifik"],
+        ["Catatan kejahatan", "Riwayat pelanggaran hukum.", "spesifik"],
+        ["Data keuangan pribadi", "Nomor rekening atau kartu kredit.", "spesifik"],
+      ];
+      let classIndex = 0,
+        classScore = 0,
+        classAnswered = false;
+      function renderClass() {
+        let x = classItems[classIndex];
+        document.getElementById("classItem").textContent = x[0];
+        document.getElementById("classDesc").textContent = x[1];
+        document.getElementById("classFeedback").textContent = "Pilih klasifikasi yang tepat.";
+        classAnswered = false;
+      }
+      function answerClass(a) {
+        if (classAnswered) return;
+        classAnswered = true;
+        let ok = a === classItems[classIndex][2];
+        if (ok) classScore++;
+        let f = document.getElementById("classFeedback");
+        f.innerHTML = (ok ? "✓ Tepat! " : "Belum tepat. ") + classItems[classIndex][0] + " termasuk data pribadi <b>" + a + "</b>.";
+        f.className = "feedback " + (ok ? "good" : "warn");
+        document.getElementById("classCount").textContent = classIndex + 1 + " / 8";
+        document.getElementById("classBar").style.width = ((classIndex + 1) / 8) * 100 + "%";
+        if (classIndex === 7 && classScore >= 6) award("classify", 75);
+      }
+      function nextClass() {
+        classIndex = (classIndex + 1) % classItems.length;
+        if (classIndex === 0) classScore = 0;
+        renderClass();
+      }
+
+      // Aktor & Kepatuhan (Baru)
+      const actorItems = [
+        [
+          "Sebuah perusahaan e-commerce menentukan tujuan dan cara pengumpulan data pelanggan. Perusahaan ini bertindak sebagai...",
+          ["Pengendali Data", "Prosesor Data", "Subjek Data"],
+          0,
+          'Pengendali Data menentukan "mengapa" dan "bagaimana" data diproses.',
+        ],
+        ["Layanan Cloud AWS memproses data atas perintah dari perusahaan e-commerce. AWS bertindak sebagai...", ["Pengendali Data", "Prosesor Data", "DPO"], 1, "Prosesor Data memproses data atas nama Pengendali Data."],
+        ["Berapa batas waktu maksimal bagi Pengendali Data untuk melaporkan kebocoran data ke lembaga/subjek?", ["1 x 24 jam", "3 x 24 jam", "7 x 24 jam"], 1, "UU PDP mewajibkan pemberitahuan kebocoran paling lambat 3 x 24 jam."],
+      ];
+      let actorIndex = 0,
+        actorScore = 0,
+        actorAnswered = false;
+      function renderActor() {
+        let q = actorItems[actorIndex];
+        document.getElementById("actorScenario").textContent = q[0];
+        document.getElementById("actorOptions").innerHTML = q[1].map((v, i) => `<button class="choice" onclick="answerActor(${i})">${String.fromCharCode(65 + i)}. ${v}</button>`).join("");
+        document.getElementById("actorFeedback").textContent = "Pilih jawaban yang paling tepat.";
+        actorAnswered = false;
+      }
+      function answerActor(i) {
+        if (actorAnswered) return;
+        actorAnswered = true;
+        let q = actorItems[actorIndex],
+          ok = i === q[2];
+        if (ok) actorScore++;
+        let f = document.getElementById("actorFeedback");
+        f.textContent = (ok ? "✓ Benar. " : "Belum tepat. ") + q[3];
+        f.className = "feedback " + (ok ? "good" : "warn");
+        document.getElementById("actorCount").textContent = actorIndex + 1 + " / 3";
+        document.getElementById("actorBar").style.width = ((actorIndex + 1) / 3) * 100 + "%";
+        if (actorIndex === 2 && actorScore >= 2) award("actors", 75);
+      }
+      function nextActor() {
+        actorIndex = (actorIndex + 1) % actorItems.length;
+        if (actorIndex === 0) actorScore = 0;
+        renderActor();
+      }
+
+      // Consent Logic
+      function submitConsent() {
+        let agree = document.getElementById("consentAgree").checked;
+        let info = document.getElementById("consentInfo").checked;
+        let p = document.getElementById("consentPurpose").value;
+        let el = document.getElementById("consentResult");
+        if (agree && info) {
+          el.innerHTML = "✓ Persetujuan tercatat valid untuk tujuan: <b>" + p + "</b>.";
+          el.className = "feedback good";
+          award("consent", 75);
+        } else {
+          el.innerHTML = "⚠ Persetujuan belum sah. Pastikan centang informasi dan persetujuan aktif.";
+          el.className = "feedback warn";
+        }
+      }
+      function withdrawConsent() {
+        document.getElementById("withdrawResult").innerHTML = "✓ Penarikan persetujuan diterima. Pengendali wajib menghentikan pemrosesan data.";
+        document.getElementById("withdrawResult").className = "feedback good";
+        award("withdraw", 25);
+      }
+
+      // Hak Subjek Data
+      const rights = [
+        [
+          "Mahasiswa ingin mengetahui data apa saja yang disimpan oleh portal akademik.",
+          ["Memperoleh akses dan salinan data", "Menolak seluruh layanan", "Meminta portabilitas jaringan"],
+          0,
+          "Subjek data berhak mengakses dan memperoleh salinan data.",
+        ],
+        ["Mahasiswa menemukan nomor teleponnya salah dan ingin memperbaikinya.", ["Menghapus sistem", "Melengkapi, memperbarui, dan memperbaiki data", "Meminta ganti rugi"], 1, "Hak perbaikan untuk data yang tidak akurat."],
+        ["Mahasiswa ingin menarik persetujuan penggunaan datanya untuk promosi.", ["Menarik persetujuan", "Meminta data biometrik baru", "Meminta data dipublikasikan"], 0, "Penarikan persetujuan dapat dilakukan kapan saja."],
+        ["Mahasiswa meminta penghapusan data yang tidak lagi relevan dan tidak memiliki alasan penyimpanan yang sah.", ["Meminta penghapusan atau pemusnahan sesuai ketentuan", "Meminta data dipublikasikan", "Meminta data disalin ke media sosial"], 0, "Hak penghapusan atau pemusnahan dilaksanakan sesuai kondisi dan ketentuan yang berlaku."],
+        ["Mahasiswa meminta agar pemrosesan tertentu dihentikan sementara karena sedang mengajukan keberatan.", ["Mengabaikan permintaan", "Meminta pembatasan atau penghentian pemrosesan sesuai ketentuan", "Menyebarkan data ke unit lain"], 1, "Subjek data memiliki hak terkait penundaan atau pembatasan pemrosesan dalam kondisi yang ditentukan UU PDP."],
+        ["Mahasiswa ingin memperoleh data pribadinya dalam format yang dapat dibaca dan digunakan kembali sesuai ketentuan.", ["Meminta portabilitas data", "Meminta seluruh data mahasiswa lain", "Meminta penghapusan akun petugas"], 0, "UU PDP mengatur hak subjek data untuk mendapatkan dan menggunakan data pribadi dalam bentuk sesuai ketentuan."],
+      ];
+      let rightIndex = 0,
+        rightScore = 0,
+        rightDone = false;
+      function renderRight() {
+        let q = rights[rightIndex];
+        document.getElementById("rightScenario").textContent = q[0];
+        document.getElementById("rightOptions").innerHTML = q[1].map((v, i) => `<button class="choice" onclick="answerRight(${i})">${String.fromCharCode(65 + i)}. ${v}</button>`).join("");
+        document.getElementById("rightFeedback").textContent = "Pilih jawaban yang paling tepat.";
+        rightDone = false;
+      }
+      function answerRight(i) {
+        if (rightDone) return;
+        rightDone = true;
+        let q = rights[rightIndex],
+          ok = i === q[2];
+        if (ok) rightScore++;
+        let f = document.getElementById("rightFeedback");
+        f.textContent = (ok ? "✓ Benar. " : "Belum tepat. ") + q[3];
+        f.className = "feedback " + (ok ? "good" : "warn");
+        document.getElementById("rightCount").textContent = rightIndex + 1 + " / " + rights.length;
+        document.getElementById("rightBar").style.width = ((rightIndex + 1) / rights.length) * 100 + "%";
+        if (rightIndex === rights.length - 1 && rightScore >= Math.ceil(rights.length * 0.75)) award("rights", 75);
+      }
+      function nextRight() {
+        if (rightIndex === rights.length - 1) {
+          document.getElementById("rightFeedback").textContent = `Investigasi selesai: ${rightScore}/${rights.length} keputusan tepat. ${rightScore >= Math.ceil(rights.length*0.75) ? "Kompetensi tercapai." : "Pelajari pembahasan dan ulangi latihan."}`;
+          rightIndex = 0; rightScore = 0;
+          renderRight();
+          return;
+        }
+        rightIndex++;
+        renderRight();
+      }
+
+
+      // Misi 4: Access Control (RBAC) - simulasi edukatif
+      // Misi 4: The Gatekeeper — permainan keputusan RBAC
+      const gateCases = [
+        { actor:"Mahasiswa", role:"mahasiswa", request:"Melihat KHS miliknya sendiri", scope:"Data akademik milik sendiri", decision:"allow", why:"Mahasiswa boleh melihat data akademik miliknya sendiri. Cakupan akses sesuai kebutuhan." },
+        { actor:"Mahasiswa", role:"mahasiswa", request:"Mengunduh alamat, nomor telepon, dan nilai seluruh mahasiswa", scope:"Data pribadi seluruh mahasiswa", decision:"deny", why:"Mahasiswa tidak memiliki kewenangan melihat data pribadi mahasiswa lain, apalagi mengunduh seluruh data." },
+        { actor:"Dosen", role:"dosen", request:"Melihat daftar nilai mahasiswa pada kelas yang sedang diampu", scope:"Kelas yang ditugaskan kepada dosen", decision:"allow", why:"Akses dapat diberikan karena berkaitan langsung dengan tugas mengajar dan terbatas pada kelas yang diampu." },
+        { actor:"Dosen", role:"dosen", request:"Membuka nilai mahasiswa dari kelas yang tidak diampu", scope:"Kelas di luar penugasan", decision:"deny", why:"Status sebagai dosen tidak otomatis memberi akses ke seluruh data akademik. Akses harus dibatasi pada kelas yang menjadi tanggung jawabnya." },
+        { actor:"Operator Akademik", role:"operator", request:"Memperbarui status registrasi mahasiswa sesuai tiket tugas yang disetujui", scope:"Data registrasi yang diperlukan untuk tugas", decision:"allow", why:"Operator dapat mengakses data administrasi yang diperlukan sesuai penugasan. Akses tidak boleh meluas ke data yang tidak relevan." }
+      ];
+      let gateIndex = -1, gateScore = 0, gateStreak = 0, gateLocked = false, gateStarted = false;
+      function renderGateCase() {
+        const c = gateCases[gateIndex];
+        document.getElementById("gateRound").textContent = gateIndex + "/5";
+        document.getElementById("gateScore").textContent = gateScore;
+        document.getElementById("gateStreak").textContent = gateStreak;
+        document.getElementById("gateProgress").style.width = (gateIndex/5*100) + "%";
+        document.getElementById("gateScenario").innerHTML =
+          `<div class="tag">SKENARIO ${gateIndex+1} DARI 5</div>
+           <h3>👤 Pemohon: ${c.actor}</h3>
+           <div class="result"><div class="eyebrow">PERMINTAAN</div><b>${c.request}</b><p class="muted" style="margin-bottom:0">Cakupan: ${c.scope}</p></div>
+           <p class="muted">Sebagai Gatekeeper, tentukan apakah permintaan ini boleh diproses.</p>`;
+        document.getElementById("gateAllowBtn").disabled = false;
+        document.getElementById("gateDenyBtn").disabled = false;
+      }
+      function startGateGame() {
+        gateIndex = 0; gateScore = 0; gateStreak = 0; gateLocked = false; gateStarted = true;
+        document.getElementById("gateStartBtn").textContent = "Operasi Berjalan";
+        document.getElementById("gateStartBtn").disabled = true;
+        document.getElementById("gateFeedback").textContent = "Periksa peran dan cakupan data. Pilih keputusan Anda.";
+        renderGateCase();
+      }
+      function submitGateDecision(choice) {
+        if (!gateStarted || gateLocked || gateIndex < 0 || gateIndex >= gateCases.length) return;
+        gateLocked = true;
+        const c = gateCases[gateIndex], correct = choice === c.decision;
+        if (correct) { gateScore += 20; gateStreak += 1; }
+        else { gateStreak = 0; }
+        document.getElementById("gateScore").textContent = gateScore;
+        document.getElementById("gateStreak").textContent = gateStreak;
+        document.getElementById("gateAllowBtn").disabled = true;
+        document.getElementById("gateDenyBtn").disabled = true;
+        const feedback = document.getElementById("gateFeedback");
+        feedback.className = "feedback " + (correct ? "good" : "warn");
+        feedback.innerHTML = (correct ? "🎯 <b>Keputusan tepat! +20 poin.</b> " : "⚠️ <b>Keputusan belum tepat.</b> ") +
+          c.why + `<div style="margin-top:8px"><b>Prinsip:</b> ${correct ? "Keputusan sesuai" : "Evaluasi kembali"} dengan RBAC dan Least Privilege.</div>` +
+          `<button class="btn primary" style="margin-top:10px" onclick="nextGateCase()">${gateIndex === 4 ? "Lihat Hasil Operasi →" : "Kasus Berikutnya →"}</button>`;
+      }
+      function nextGateCase() {
+        if (!gateLocked) return;
+        gateIndex += 1; gateLocked = false;
+        if (gateIndex < gateCases.length) {
+          document.getElementById("gateFeedback").className = "feedback";
+          document.getElementById("gateFeedback").textContent = "Kasus berikutnya masuk. Periksa kewenangan dengan teliti.";
+          renderGateCase();
+        } else {
+          document.getElementById("gateRound").textContent = "5/5";
+          document.getElementById("gateProgress").style.width = "100%";
+          document.getElementById("gateScenario").innerHTML = `<div class="tag">OPERASI SELESAI</div><h3>🏁 Gerbang SIAKAD berhasil diperiksa!</h3><p>Skor akhir Anda: <b>${gateScore}/100</b></p><p class="muted">${gateScore >= 80 ? "Luar biasa, Anda memahami pembatasan akses berbasis peran." : "Latihan lagi untuk memperkuat keputusan berdasarkan peran, tugas, dan cakupan data."}</p>`;
+          document.getElementById("gateAllowBtn").disabled = true;
+          document.getElementById("gateDenyBtn").disabled = true;
+          document.getElementById("gateStartBtn").disabled = false;
+          document.getElementById("gateStartBtn").textContent = "▶ Main Lagi";
+          gateStarted = false;
+          document.getElementById("gateFeedback").className = "feedback " + (gateScore >= 80 ? "good" : "warn");
+          document.getElementById("gateFeedback").textContent = gateScore >= 80 ? "🏆 Misi berhasil! Anda memperoleh 100 XP karena meraih minimal 80 poin." : "Misi selesai. Ulangi untuk mencapai minimal 80 poin dan memperoleh XP.";
+          if (gateScore >= 80) award("access", 100);
+        }
+      }
+      function resetGateGame() {
+        gateIndex = -1; gateScore = 0; gateStreak = 0; gateLocked = false; gateStarted = false;
+        document.getElementById("gateRound").textContent = "0/5";
+        document.getElementById("gateScore").textContent = "0";
+        document.getElementById("gateStreak").textContent = "0";
+        document.getElementById("gateProgress").style.width = "0%";
+        document.getElementById("gateScenario").innerHTML = '<div class="tag">SIAPKAN POS JAGA</div><h3>Mulai pemeriksaan akses</h3><p class="muted">Tekan tombol mulai untuk menerima permintaan akses pertama.</p>';
+        document.getElementById("gateFeedback").className = "feedback";
+        document.getElementById("gateFeedback").textContent = "Target: selesaikan 5 pemeriksaan dan raih minimal 4 keputusan benar.";
+        document.getElementById("gateStartBtn").disabled = false;
+        document.getElementById("gateStartBtn").textContent = "▶ Mulai Operasi";
+        document.getElementById("gateAllowBtn").disabled = true;
+        document.getElementById("gateDenyBtn").disabled = true;
+      }
+
+      // Misi 5: Digital Forensics — investigasi kasus berbasis audit trail
+      let auditEvents = [];
+      let auditCaseLoaded = false;
+      let auditCaseSubmitted = false;
+      const auditEvidence = [
+        {id:1,time:"2026-11-18 08:02:11.204",actor:"rina.pratama",role:"LECTURER",ip:"10.20.4.18",host:"SIAKAD-WEB-02",event:"READ /grades/class/IF2A",status:"200 OK",detail:"32 record · kelas diampu",suspicious:false,why:"Pembacaan nilai sesuai peran dosen dan ruang lingkup kelas yang diampu."},
+        {id:2,time:"2026-11-18 08:47:03.118",actor:"op.akademik",role:"OPERATOR",ip:"10.20.4.25",host:"AUTH-GW-01",event:"AUTH /login",status:"401 FAILED ×7",detail:"7 percobaan gagal dalam 90 detik · akun terkunci",suspicious:true,why:"Percobaan autentikasi gagal berulang dapat menunjukkan brute-force atau penyalahgunaan kredensial."},
+        {id:3,time:"2026-11-18 02:13:46.772",actor:"op.akademik",role:"OPERATOR",ip:"185.22.91.7",host:"AUTH-GW-01",event:"AUTH /login",status:"200 SUCCESS",detail:"Geo/IP baru · perangkat belum dikenal · di luar jam kerja",suspicious:true,why:"Login sukses dari IP dan perangkat baru pada dini hari perlu diverifikasi dengan pemilik akun."},
+        {id:4,time:"2026-11-18 09:01:22.091",actor:"admin.sistem",role:"SYSADMIN",ip:"10.20.1.5",host:"SIAKAD-ADMIN-01",event:"CONFIG /backup/schedule",status:"200 UPDATED",detail:"Tiket perubahan CHG-118 · jadwal backup 01:00",suspicious:false,why:"Perubahan konfigurasi memiliki tiket perubahan dan identitas admin yang dapat ditelusuri."},
+        {id:5,time:"2026-11-18 09:06:51.430",actor:"op.akademik",role:"OPERATOR",ip:"185.22.91.7",host:"SIAKAD-API-03",event:"EXPORT /students?scope=all",status:"200 OK",detail:"2.450 rows · 4 field pribadi · response 8.4 MB",suspicious:true,why:"Ekspor massal seluruh mahasiswa dari sesi dan IP tidak biasa merupakan indikator kuat yang perlu segera diselidiki."},
+        {id:6,time:"2026-11-18 09:08:10.008",actor:"op.akademik",role:"OPERATOR",ip:"185.22.91.7",host:"SIAKAD-WEB-02",event:"DELETE /download-history",status:"204 NO CONTENT",detail:"Riwayat unduhan lokal dihapus setelah ekspor",suspicious:true,why:"Penghapusan jejak setelah ekspor data dapat mengindikasikan upaya menutupi aktivitas; preservasi bukti menjadi prioritas."}
+      ];
+      function loadAuditCase() {
+        auditCaseLoaded = true; auditCaseSubmitted = false;
+        auditEvents = auditEvidence.map(e => ({...e, selected:false}));
+        document.getElementById("auditLoadBtn").disabled = true;
+        document.getElementById("auditSubmitBtn").disabled = false;
+        document.getElementById("auditFeedback").className = "feedback";
+        document.getElementById("auditFeedback").textContent = "Bukti berhasil dimuat. Periksa kronologi dan tandai semua indikator mencurigakan.";
+        renderAuditCase();
+      }
+      function renderAuditCase() {
+        const el = document.getElementById("auditLog");
+        if (!auditCaseLoaded) { el.textContent = "Bukti digital belum dimuat."; return; }
+        el.innerHTML = `<div style="font-family:monospace;font-size:12px;min-width:560px">
+          <div style="display:grid;grid-template-columns:1.7fr .8fr 1fr 1.5fr .8fr;gap:7px;padding:8px;color:var(--cyan);border-bottom:1px solid var(--line);font-weight:bold"><span>TIMESTAMP</span><span>ACTOR</span><span>IP / HOST</span><span>EVENT</span><span>STATUS</span></div>` +
+          auditEvents.map(e => `<label style="display:grid;grid-template-columns:1.7fr .8fr 1fr 1.5fr .8fr;gap:7px;padding:10px 7px;border-bottom:1px solid var(--line);cursor:pointer;align-items:start">
+          <span><input type="checkbox" ${e.selected ? "checked" : ""} ${auditCaseSubmitted ? "disabled" : ""} onchange="toggleAuditEvidence(${e.id},this.checked)"> ${e.time}</span>
+          <span>${e.actor}<br><span class="muted">${e.role}</span></span>
+          <span>${e.ip}<br><span class="muted">${e.host}</span></span>
+          <span>${e.event}<br><span class="muted">${e.detail}</span></span>
+          <span>${e.status}</span></label>`).join("") + `</div>` +
+          (auditCaseSubmitted ? `<div class="feedback" style="margin-top:10px">Hasil pemeriksaan ditampilkan pada setiap baris: indikator mencurigakan perlu ditindaklanjuti, sedangkan aktivitas normal tetap menjadi bagian kronologi.</div>` : "");
+        document.getElementById("auditEvidenceCount").textContent = auditEvents.filter(e=>e.selected).length + "/6";
+      }
+      function toggleAuditEvidence(id, checked) {
+        if (auditCaseSubmitted) return;
+        const item = auditEvents.find(e=>e.id===id);
+        if (item) item.selected = checked;
+        document.getElementById("auditEvidenceCount").textContent = auditEvents.filter(e=>e.selected).length + "/6";
+      }
+      function submitAuditCase() {
+        if (!auditCaseLoaded || auditCaseSubmitted) return;
+        const correct = auditEvents.filter(e=>e.suspicious).map(e=>e.id);
+        const chosen = auditEvents.filter(e=>e.selected).map(e=>e.id);
+        const hits = chosen.filter(id=>correct.includes(id)).length;
+        const falsePositives = chosen.filter(id=>!correct.includes(id)).length;
+        const missed = correct.filter(id=>!chosen.includes(id)).length;
+        const score = Math.max(0, Math.round((hits/correct.length)*70 - falsePositives*10 - missed*5 + (falsePositives===0 && missed===0 ? 30 : 0)));
+        const finalScore = Math.min(100,score);
+        auditCaseSubmitted = true;
+        document.getElementById("auditCaseScore").textContent = finalScore;
+        document.getElementById("auditCaseStatus").textContent = finalScore===100 ? "TEPAT" : "DITINJAU";
+        document.getElementById("auditSubmitBtn").disabled = true;
+        renderAuditCase();
+        const fb=document.getElementById("auditFeedback");
+        fb.className = "feedback " + (finalScore>=80 ? "good" : "warn");
+        fb.innerHTML = `<b>${finalScore>=80 ? "🏆 Investigasi berhasil!" : "🧭 Investigasi perlu ditingkatkan."}</b><p>Skor: ${finalScore}/100 · Indikator tepat: ${hits}/${correct.length} · Salah tandai: ${falsePositives} · Terlewat: ${missed}</p>` +
+          auditEvidence.filter(e=>e.suspicious).map(e=>`<p><b>${e.time} — ${e.event}</b><br>${e.why}</p>`).join("") +
+          `<p><b>Kesimpulan kasus:</b> terdapat rangkaian aktivitas tidak biasa pada akun operator, mulai dari percobaan login, login dari IP/perangkat baru di luar jam operasional, ekspor data massal, hingga penghapusan jejak. Ini merupakan indikasi yang harus dieskalasikan untuk verifikasi dan respons insiden, bukan bukti final siapa pelakunya.</p>`;
+        if (finalScore>=80) award("audit",100);
+      }
+      function resetAuditCase() {
+        auditEvents=[]; auditCaseLoaded=false; auditCaseSubmitted=false;
+        document.getElementById("auditLoadBtn").disabled=false;
+        document.getElementById("auditSubmitBtn").disabled=true;
+        document.getElementById("auditEvidenceCount").textContent="0/6";
+        document.getElementById("auditCaseScore").textContent="0";
+        document.getElementById("auditCaseStatus").textContent="BELUM";
+        document.getElementById("auditFeedback").className="feedback";
+        document.getElementById("auditFeedback").textContent="Kasus belum dibuka. Tekan tombol untuk memuat bukti audit.";
+        renderAuditCase();
+      }
+
+      // Misi 6: Incident Commander — keputusan bertahap
+      const breachStages = [
+        {title:"Tahap 1 — Verifikasi laporan",story:"Helpdesk melaporkan file ekspor mahasiswa terbuka melalui tautan publik. Apa tindakan pertama tim respons?",options:["Menghapus seluruh server agar tautan hilang","Memverifikasi laporan, URL, jenis data, dan waktu paparan tanpa menyebarkan file","Mengumumkan nama mahasiswa yang ada di file"],correct:1,explain:"Verifikasi fakta dan ruang lingkup awal secara aman. Jangan merusak sistem atau menyebarkan data."},
+        {title:"Tahap 2 — Kendalikan paparan",story:"Tim memastikan tautan masih dapat diakses tanpa login. Apa langkah containment yang paling tepat?",options:["Menonaktifkan tautan/akses publik dan membatasi akses terkait; dokumentasikan tindakan","Membiarkan tautan aktif sambil menunggu rapat minggu depan","Mengirim tautan ke grup kelas agar semua tahu"],correct:0,explain:"Batasi akses secepatnya dan catat tindakan containment agar dampak tidak meluas."},
+        {title:"Tahap 3 — Amankan bukti",story:"Tautan sudah dinonaktifkan. Tim perlu mengetahui bagaimana file dipublikasikan. Apa yang dilakukan?",options:["Menghapus log agar penyimpanan lega","Mengedit timestamp log supaya kronologi rapi","Mengamankan salinan log, metadata, dan bukti relevan dengan kontrol integritas dan akses terbatas"],correct:2,explain:"Preservasi bukti dan log diperlukan untuk investigasi. Jangan mengubah atau menghapus bukti."},
+        {title:"Tahap 4 — Nilai dampak & notifikasi",story:"Analisis awal menunjukkan data pribadi sejumlah mahasiswa terekspos. Apa langkah berikutnya?",options:["Mengidentifikasi kategori data, jumlah subjek, risiko/dampak, lalu menyiapkan notifikasi sesuai ketentuan","Menganggap tidak ada risiko karena file sudah ditutup","Mengirim daftar lengkap korban ke media sosial"],correct:0,explain:"Penilaian dampak dan proses pemberitahuan harus mengikuti UU PDP dan prosedur organisasi. Materi kuliah membahas batas 3 × 24 jam."},
+        {title:"Tahap 5 — Pulihkan & cegah berulang",story:"Paparan telah dikendalikan dan investigasi awal selesai. Apa tindakan pemulihan terbaik?",options:["Mengaktifkan kembali tautan publik yang sama","Memulihkan layanan secara aman, memperbaiki kontrol akses, menguji, dan mendokumentasikan pembelajaran","Mengabaikan temuan setelah layanan berjalan"],correct:1,explain:"Pemulihan harus disertai perbaikan akar masalah, pengujian kontrol, dokumentasi, dan evaluasi."}
+      ];
+      let breachIndex=-1, breachScore=0, breachAnswered=false, breachStarted=false;
+      function startBreachGame(){breachIndex=0;breachScore=0;breachAnswered=false;breachStarted=true;document.getElementById("breachFeedback").textContent="Operasi dimulai. Pilih keputusan berdasarkan prioritas respons insiden.";renderBreachStage();}
+      function renderBreachStage(){
+        const s=breachStages[breachIndex];
+        document.getElementById("breachStage").textContent=(breachIndex+1)+"/5";
+        document.getElementById("breachPoints").textContent=breachScore;
+        document.getElementById("breachImpact").textContent=breachScore>=40?"TERKENDALI":"WASPADA";
+        document.getElementById("breachScenario").innerHTML=`<div class="tag">PERKEMBANGAN INSIDEN ${breachIndex+1}/5</div><h3>${s.title}</h3><p>${s.story}</p>`+s.options.map((o,i)=>`<button class="choice" style="display:block;width:100%;text-align:left;margin:8px 0" onclick="answerBreach(${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join("");
+        document.getElementById("breachFeedback").className="feedback";
+        document.getElementById("breachFeedback").textContent="Pilih satu keputusan. Anda akan melihat konsekuensi dan penjelasannya.";
+      }
+      function answerBreach(i){
+        if(!breachStarted||breachAnswered)return;breachAnswered=true;
+        const s=breachStages[breachIndex],ok=i===s.correct;if(ok)breachScore+=20;
+        document.getElementById("breachPoints").textContent=breachScore;
+        const el=document.getElementById("breachFeedback");el.className="feedback "+(ok?"good":"warn");
+        el.innerHTML=(ok?"✅ Keputusan tepat. +20 poin. ":"⚠️ Keputusan berisiko. ")+s.explain+
+          `<div style="margin-top:10px"><button class="btn primary" onclick="nextBreachStage()">${breachIndex===4?"Lihat laporan akhir":"Lanjutkan respons →"}</button></div>`;
+      }
+      function nextBreachStage(){
+        if(!breachAnswered)return;breachIndex++;breachAnswered=false;
+        if(breachIndex<5){renderBreachStage();return;}
+        breachStarted=false;document.getElementById("breachImpact").textContent=breachScore>=80?"TERKENDALI":"PERLU LATIHAN";
+        document.getElementById("breachScenario").innerHTML=`<div class="tag">LAPORAN AKHIR INSIDEN</div><h3>🏁 Operasi respons selesai</h3><p>Skor keputusan: <b>${breachScore}/100</b></p><p>${breachScore>=80?"Anda menunjukkan prioritas respons insiden yang baik.":"Tinjau kembali tahapan respons dan ulangi simulasi."}</p><button class="btn primary" onclick="startBreachGame()">▶ Ulangi simulasi</button>`;
+        document.getElementById("breachFeedback").className="feedback "+(breachScore>=80?"good":"warn");
+        document.getElementById("breachFeedback").textContent=breachScore>=80?"Misi berhasil! Anda memperoleh 100 XP.":"Misi belum mencapai 80 poin. Coba lagi untuk memperkuat keputusan.";
+        if(breachScore>=80)award("breach",100);
+      }
+
+      // Modul konsep 5: Prinsip Pemrosesan Data
+      const principleItems = [
+        ["Portal akademik hanya meminta data yang diperlukan untuk pendaftaran mata kuliah.", ["Minimalisasi data", "Publikasi data", "Penyimpanan tanpa batas"], 0, "Kumpulkan data secukupnya sesuai kebutuhan."],
+        ["Kampus menjelaskan tujuan penggunaan email sebelum meminta data.", ["Transparansi", "Pengumpulan berlebihan", "Penghapusan otomatis"], 0, "Subjek data perlu memperoleh informasi yang jelas."],
+        ["Data nilai diperbarui ketika ditemukan kesalahan.", ["Akurasi data", "Tokenisasi", "Anonimitas"], 0, "Data perlu dijaga agar akurat dan mutakhir."],
+        ["Data lama yang tidak lagi diperlukan ditinjau sesuai kebijakan retensi.", ["Pembatasan penyimpanan", "Akses publik", "Duplikasi data"], 0, "Data tidak disimpan lebih lama dari yang diperlukan sesuai dasar dan ketentuan yang berlaku."],
+        ["Kampus menjelaskan identitas pengendali, tujuan, dan informasi pemrosesan dengan bahasa yang mudah dipahami.", ["Transparansi", "Pengumpulan berlebihan", "Penyimpanan permanen"], 0, "Informasi pemrosesan perlu disampaikan secara jelas dan mudah dipahami."],
+        ["Akses basis data mahasiswa dibatasi dan dilindungi dari akses tidak sah.", ["Keamanan dan kerahasiaan", "Publikasi terbuka", "Penggunaan sekunder bebas"], 0, "Pengendali wajib menjaga keamanan data pribadi sesuai ketentuan."],
+      ];
+      let principleIndex = 0, principleScore = 0, principleAnswered = false;
+      function renderPrinciple() {
+        const q = principleItems[principleIndex];
+        document.getElementById("principleQuestion").textContent = q[0];
+        document.getElementById("principleOptions").innerHTML = q[1].map((v, i) =>
+          `<button class="choice" onclick="answerPrinciple(${i})">${String.fromCharCode(65+i)}. ${v}</button>`
+        ).join("");
+        document.getElementById("principleFeedback").textContent = "Pilih jawaban yang paling tepat.";
+        principleAnswered = false;
+      }
+      function answerPrinciple(i) {
+        if (principleAnswered) return;
+        principleAnswered = true;
+        const q = principleItems[principleIndex];
+        const ok = i === q[2];
+        if (ok) principleScore++;
+        const el = document.getElementById("principleFeedback");
+        el.className = "feedback " + (ok ? "good" : "warn");
+        el.textContent = (ok ? "✓ Benar. " : "Belum tepat. ") + q[3];
+        document.getElementById("principleCount").textContent = (principleIndex + 1) + " / " + principleItems.length;
+        document.getElementById("principleBar").style.width = ((principleIndex + 1) / principleItems.length * 100) + "%";
+        if (principleIndex === principleItems.length - 1 && principleScore >= Math.ceil(principleItems.length * 0.75)) award("principles", 75);
+      }
+      function nextPrinciple() {
+        if (principleIndex === principleItems.length - 1) {
+          document.getElementById("principleFeedback").textContent = `Investigasi selesai: ${principleScore}/${principleItems.length} kasus tepat. ${principleScore >= Math.ceil(principleItems.length*0.75) ? "Kompetensi tercapai." : "Ulangi latihan untuk memperkuat pemahaman."}`;
+          principleIndex = 0; principleScore = 0; renderPrinciple(); return;
+        }
+        principleIndex++; renderPrinciple();
+      }
+
+      // Modul konsep 6: Privacy by Design — Secure System Architect
+      const privacyCases = [
+        {title:"Tahap 1 · Kebutuhan data",q:"Tim merancang formulir konsultasi akademik. Data apa yang sebaiknya diminta?",opts:["Semua data pribadi agar tersedia untuk kebutuhan mendatang","Hanya data yang diperlukan untuk memberikan layanan konsultasi","Data keluarga, lokasi, dan kontak seluruh teman"],correct:1,why:"Privacy by Design menerapkan minimalisasi data: kumpulkan data yang relevan dan diperlukan untuk tujuan layanan."},
+        {title:"Tahap 2 · Hak akses",q:"Petugas administrasi perlu memproses jadwal konsultasi. Rancangan akses terbaik adalah...",opts:["Semua petugas dapat melihat seluruh catatan konsultasi","Akses diberikan berdasarkan peran dan kebutuhan tugas","Akun petugas menggunakan satu kata sandi bersama"],correct:1,why:"Akses berbasis peran dan kebutuhan membatasi paparan data kepada pihak yang berwenang."},
+        {title:"Tahap 3 · Pengaturan awal",q:"Aplikasi baru dipasang. Bagaimana pengaturan privasi awal yang tepat?",opts:["Profil dan catatan konsultasi terbuka untuk semua pengguna","Pengguna harus menonaktifkan fitur publikasi satu per satu","Data bersifat privat secara default dan hanya dibuka jika ada kebutuhan serta dasar yang sah"],correct:2,why:"Privacy by default berarti konfigurasi awal melindungi privasi dan tidak membuka data secara berlebihan."},
+        {title:"Tahap 4 · Retensi dan keamanan",q:"Tim menentukan siklus hidup data konsultasi. Langkah yang tepat adalah...",opts:["Menentukan retensi, kontrol keamanan, dan prosedur penghapusan sesuai tujuan serta ketentuan","Menyimpan data selamanya untuk berjaga-jaga","Menghapus log keamanan agar kapasitas lebih hemat"],correct:0,why:"Perlindungan perlu mencakup seluruh siklus hidup data, termasuk keamanan, retensi, dan penghapusan yang tepat."}
+      ];
+      let privacyIndex=0, privacyScore=0, privacyAnswered=false;
+      function renderPrivacyOptions() {
+        const q=privacyCases[privacyIndex];
+        document.getElementById("privacyStage").textContent=q.title;
+        document.getElementById("privacyQuestion").textContent=q.q;
+        document.getElementById("privacyOptions").innerHTML=q.opts.map((v,i)=>`<button class="choice" onclick="answerPrivacy(${i})">${String.fromCharCode(65+i)}. ${v}</button>`).join("");
+        document.getElementById("privacyFeedback").textContent="Pilih rancangan yang paling melindungi data pribadi.";
+        document.getElementById("privacyProgressText").textContent=(privacyIndex+1)+" / "+privacyCases.length;
+        document.getElementById("privacyProgressBar").style.width=((privacyIndex)/privacyCases.length*100)+"%";
+        document.getElementById("privacyNext").disabled=true;
+        privacyAnswered=false;
+      }
+      function answerPrivacy(i) {
+        if(privacyAnswered)return;
+        privacyAnswered=true;
+        const q=privacyCases[privacyIndex], ok=i===q.correct;
+        if(ok)privacyScore++;
+        const el=document.getElementById("privacyFeedback");
+        el.className="feedback "+(ok?"good":"warn");
+        el.textContent=(ok?"✓ Keputusan tepat. ":"Perlu ditinjau. ")+q.why;
+        document.querySelectorAll("#privacyOptions .choice").forEach(x=>x.disabled=true);
+        document.getElementById("privacyNext").disabled=false;
+        document.getElementById("privacyNext").textContent=privacyIndex===privacyCases.length-1?"Selesaikan simulasi":"Tahap berikutnya →";
+      }
+      function nextPrivacyStage(){
+        if(!privacyAnswered)return;
+        if(privacyIndex<privacyCases.length-1){privacyIndex++;renderPrivacyOptions();return;}
+        document.getElementById("privacyFeedback").textContent=`Perancangan selesai: ${privacyScore}/${privacyCases.length} keputusan tepat. ${privacyScore>=3?"Anda berhasil menerapkan prinsip Privacy by Design.":"Pelajari rekomendasi dan ulangi simulasi."}`;
+        document.getElementById("privacyProgressText").textContent=privacyCases.length+" / "+privacyCases.length;
+        document.getElementById("privacyProgressBar").style.width="100%";
+        if(privacyScore>=3)award("privacy",75);
+        privacyIndex=0;privacyScore=0;
+        document.getElementById("privacyNext").textContent="Mulai ulang simulasi";
+        document.getElementById("privacyNext").disabled=false;
+        privacyAnswered=true;
+        document.getElementById("privacyNext").onclick=()=>{document.getElementById("privacyNext").onclick=null;renderPrivacyOptions();};
+      }
+      function completePrivacy(){ nextPrivacyStage(); }
+
+      // Final Boss Challenge — evaluasi acak tanpa petunjuk kategori materi
+      const qsBank = [
+        {topic:"",q:"Petugas loket hanya perlu melihat empat digit terakhir nomor telepon mahasiswa. Teknik yang paling sesuai?",a:["Masking","Tokenisasi","Audit trail"],c:0,e:"Masking menyamarkan sebagian tampilan data agar informasi lengkap tidak terlihat."},
+        {topic:"",q:"Aplikasi menyimpan token pengganti, sedangkan nilai asli disimpan terpisah di Token Vault. Teknik ini disebut...",a:["Kompresi","Tokenisasi","Hashing kata sandi"],c:1,e:"Tokenisasi mengganti nilai asli dengan token yang dipetakan secara terpisah di vault."},
+        {topic:"",q:"Data sensitif perlu diubah menjadi ciphertext dan hanya dapat dibaca kembali dengan kunci yang sesuai. Kontrol yang digunakan adalah...",a:["Enkripsi","Masking","Logging"],c:0,e:"Enkripsi melindungi kerahasiaan data melalui transformasi kriptografis dan pengelolaan kunci."},
+        {topic:"",q:"Dosen A hanya mengampu kelas IF-2A, tetapi meminta akses ke nilai semua kelas. Keputusan paling tepat?",a:["Izinkan karena dosen adalah pegawai kampus","Tolak atau batasi hanya pada kelas yang diampu","Berikan akses administrator sementara"],c:1,e:"RBAC dan Least Privilege membatasi akses berdasarkan peran dan kebutuhan tugas."},
+        {topic:"",q:"Log menunjukkan login operator dari IP baru pada dini hari, diikuti ekspor 2.450 data mahasiswa. Tindakan auditor yang tepat?",a:["Menghapus log agar tidak menimbulkan kepanikan","Menghubungkan kronologi, memverifikasi konteks, dan mengamankan bukti","Langsung menyatakan pemilik akun sebagai pelaku"],c:1,e:"Audit trail membantu investigasi, tetapi indikator tidak otomatis membuktikan identitas pelaku."},
+        {topic:"",q:"Tautan publik berisi data pribadi masih aktif. Prioritas awal respons insiden adalah...",a:["Membatasi akses/menonaktifkan tautan dan mendokumentasikan containment","Menyebarkan tautan ke semua mahasiswa","Menghapus seluruh server tanpa preservasi"],c:0,e:"Containment bertujuan menghentikan atau membatasi paparan tanpa menghilangkan bukti penting."},
+        {topic:"",q:"Informasi kesehatan seseorang termasuk kategori data pribadi...",a:["Umum","Spesifik","Bukan data pribadi"],c:1,e:"Data kesehatan termasuk data pribadi yang bersifat spesifik menurut UU PDP."},
+        {topic:"",q:"Pihak yang menentukan tujuan dan melakukan kendali atas pemrosesan data pribadi disebut...",a:["Subjek data","Pengendali data pribadi","Pengunjung sistem"],c:1,e:"Pengendali menentukan tujuan dan melakukan kendali pemrosesan data pribadi."},
+        {topic:"",q:"Sebelum meminta persetujuan pemrosesan data, organisasi sebaiknya...",a:["Menjelaskan tujuan dan informasi relevan secara jelas","Menyembunyikan tujuan pemrosesan","Menganggap diam selalu berarti setuju"],c:0,e:"Persetujuan harus didasarkan pada informasi yang jelas dan mekanisme yang sah."},
+        {topic:"",q:"Mahasiswa meminta salinan data pribadinya yang diproses kampus. Permintaan ini berkaitan dengan...",a:["Hak subjek data","Hak administrator jaringan","Hak publikasi bebas"],c:0,e:"Subjek data memiliki hak terkait akses dan salinan data pribadinya sesuai ketentuan."},
+        {topic:"",q:"Formulir layanan hanya meminta data yang benar-benar dibutuhkan untuk tujuan layanan. Prinsip yang diterapkan adalah...",a:["Minimalisasi data","Pengumpulan tanpa batas","Publikasi terbuka"],c:0,e:"Minimalisasi data membatasi pengumpulan pada data yang relevan dan diperlukan."},
+        {topic:"",q:"Tim merancang aplikasi dengan akses terbatas dan pengaturan privasi aman sejak awal. Pendekatan ini disebut...",a:["Privacy by Design","Open by default","Data hoarding"],c:0,e:"Privacy by Design memasukkan perlindungan privasi sejak tahap perancangan sistem."},
+        {topic:"",q:"Petugas hanya membutuhkan tampilan empat digit terakhir NIM pada layar layanan. Apa tujuan kontrol tersebut?",a:["Mengurangi paparan data pada tampilan","Mengubah data asli secara permanen","Mengganti proses autentikasi"],c:0,e:"Pembatasan tampilan membantu mengurangi paparan informasi sensitif kepada pengguna yang tidak memerlukan nilai lengkap."},
+        {topic:"",q:"Sebuah sistem menyimpan pemetaan token dan data asli dalam tempat terpisah dengan akses terbatas. Mengapa pemisahan ini penting?",a:["Agar token mudah ditebak","Agar kompromi basis data aplikasi tidak langsung membuka nilai asli","Agar semua pengguna dapat melakukan detokenisasi"],c:1,e:"Pemisahan vault membatasi dampak jika basis data aplikasi terekspos."},
+        {topic:"",q:"Kunci enkripsi aplikasi disimpan dalam repositori kode yang dapat dibaca semua pengembang. Risiko utamanya adalah...",a:["Kunci dapat terekspos kepada pihak yang tidak memerlukan","Ciphertext otomatis menjadi lebih kuat","Data tidak dapat dicadangkan"],c:0,e:"Kunci harus dikelola dan dibatasi aksesnya, tidak ditanam pada repositori yang dapat diakses luas."},
+        {topic:"",q:"Pegawai pindah unit tetapi hak akses lamanya masih aktif. Kontrol yang perlu dilakukan adalah...",a:["Meninjau dan mencabut akses yang tidak lagi diperlukan","Menambah hak administrator","Membagikan akun kepada pengganti"],c:0,e:"Hak akses perlu ditinjau ketika peran berubah agar prinsip least privilege tetap terjaga."},
+        {topic:"",q:"Dalam audit log, catatan waktu, identitas akun, sumber akses, dan aktivitas membantu...",a:["Merekonstruksi kronologi aktivitas","Menghapus kebutuhan autentikasi","Menjamin semua aktivitas pasti sah"],c:0,e:"Elemen log mendukung pemantauan dan rekonstruksi peristiwa, tetapi tidak otomatis membuktikan niat atau identitas pelaku."},
+        {topic:"",q:"Setelah menemukan dugaan kebocoran, tim sebaiknya terlebih dahulu...",a:["Mengamankan bukti dan membatasi paparan","Menghapus semua catatan sistem","Mengumumkan dugaan pelaku tanpa verifikasi"],c:0,e:"Containment dan preservasi bukti membantu membatasi dampak sekaligus mendukung investigasi."},
+        {topic:"",q:"Data biometrik dan data kesehatan seseorang dalam UU PDP termasuk...",a:["Data pribadi spesifik","Data pribadi umum","Informasi yang selalu terbuka"],c:0,e:"Data biometrik dan kesehatan termasuk kategori data pribadi spesifik."},
+        {topic:"",q:"Dalam layanan kampus, mahasiswa yang datanya diproses disebut...",a:["Subjek data pribadi","Prosesor data","Auditor sistem"],c:0,e:"Subjek data pribadi adalah orang perseorangan yang pada dirinya melekat data pribadi."},
+        {topic:"",q:"Penyedia layanan cloud memproses data atas instruksi kampus. Peran yang mungkin dijalankan penyedia tersebut adalah...",a:["Prosesor data pribadi","Subjek data pribadi","Pemilik seluruh data"],c:0,e:"Prosesor memproses data pribadi atas nama pengendali sesuai instruksi dan ketentuan."},
+        {topic:"",q:"Formulir persetujuan menggunakan kotak setuju yang sudah tercentang sebelum dibuka. Masalah utamanya adalah...",a:["Tidak menunjukkan tindakan afirmatif yang jelas dari subjek","Terlalu banyak informasi teknis","Membuat data menjadi terenkripsi"],c:0,e:"Persetujuan perlu diberikan melalui tindakan afirmatif yang jelas, bukan pilihan yang telah dicentang sebelumnya."},
+        {topic:"",q:"Mahasiswa menarik persetujuan untuk menerima promosi. Apa respons yang tepat terkait pemrosesan berbasis persetujuan itu?",a:["Menghentikan pemrosesan untuk tujuan tersebut sesuai ketentuan","Tetap mengirim promosi karena alamat email sudah dimiliki","Mengalihkan data ke pihak lain"],c:0,e:"Penarikan persetujuan harus ditindaklanjuti untuk pemrosesan yang bergantung pada persetujuan tersebut."},
+        {topic:"",q:"Mahasiswa meminta koreksi alamat yang salah pada sistem akademik. Hak yang relevan adalah...",a:["Hak memperbarui dan memperbaiki data pribadi","Hak meminta publikasi data","Hak mengubah pengendali"],c:0,e:"Subjek data memiliki hak untuk melengkapi, memperbarui, dan memperbaiki data yang tidak akurat."},
+        {topic:"",q:"Organisasi menggunakan data pendaftaran untuk tujuan baru yang tidak dijelaskan sebelumnya. Hal pertama yang perlu dinilai adalah...",a:["Kesesuaian tujuan dan dasar pemrosesan untuk penggunaan baru","Kecepatan jaringan","Warna antarmuka aplikasi"],c:0,e:"Tujuan pemrosesan harus jelas dan penggunaan lebih lanjut perlu dinilai kesesuaiannya dengan ketentuan."},
+        {topic:"",q:"Data mahasiswa yang sudah tidak diperlukan masih disimpan tanpa alasan. Prinsip yang perlu ditinjau adalah...",a:["Pembatasan penyimpanan","Ketersediaan jaringan","Kompatibilitas perangkat"],c:0,e:"Pembatasan penyimpanan mengharuskan data tidak disimpan lebih lama dari yang diperlukan sesuai ketentuan."},
+        {topic:"",q:"Kampus membagikan pemberitahuan privasi dengan bahasa jelas dan mudah ditemukan. Praktik ini mendukung...",a:["Transparansi","Pengumpulan berlebihan","Penyimpanan permanen"],c:0,e:"Transparansi mengharuskan informasi pemrosesan disampaikan secara jelas dan mudah diakses."},
+        {topic:"",q:"Aplikasi konsultasi menampilkan catatan pribadi mahasiswa kepada semua pengguna secara default. Perbaikan desain yang tepat adalah...",a:["Mengatur data privat secara default dan membatasi akses","Membiarkan pengaturan terbuka","Meminta semua pengguna berbagi akun"],c:0,e:"Privacy by default memastikan konfigurasi awal tidak membuka data lebih luas daripada yang diperlukan."},
+        {topic:"",q:"Tim pengembang melakukan penilaian risiko privasi sebelum meluncurkan fitur baru. Tujuannya adalah...",a:["Mengidentifikasi dan mengurangi risiko sejak tahap desain","Menghilangkan seluruh dokumentasi","Memastikan semua data dipublikasikan"],c:0,e:"Penilaian sejak awal membantu memasukkan perlindungan privasi ke dalam rancangan sistem."},
+        {topic:"",q:"Aplikasi meminta tanggal lahir lengkap padahal cukup memverifikasi bahwa pengguna berusia di atas batas tertentu. Pendekatan yang lebih baik adalah...",a:["Memproses informasi minimum yang cukup untuk verifikasi","Mengumpulkan juga data keluarga","Menyimpan semua informasi identitas tanpa batas"],c:0,e:"Minimalisasi data mendorong penggunaan informasi yang benar-benar diperlukan untuk tujuan yang ditetapkan."}
+      ];
+      let qs = [];
+      function shuffleArray(arr) {
+        const copy=arr.slice();
+        for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]];}
+        return copy;
+      }
+      function renderBoss(){
+        qs=shuffleArray(qsBank).slice(0,12).map(q=>{
+          const opts=shuffleArray(q.a.map((label,index)=>({label,correct:index===q.c})));
+          return {...q,a:opts.map(x=>x.label),c:opts.findIndex(x=>x.correct)};
+        });
+        document.getElementById("questions").innerHTML=qs.map((q,i)=>`<div class="panel" style="margin:12px 0;padding:15px"><b>${i+1}. ${q.q}</b>${q.a.map((v,j)=>`<label class="choice"><input style="width:auto;margin:0 8px 0 0" type="radio" name="q${i}" value="${j}" onchange="updateBossProgress()">${String.fromCharCode(65+j)}. ${v}</label>`).join("")}<div class="muted" id="ex${i}"></div></div>`).join("");
+        updateBossProgress();
+      }
+      function updateBossProgress(){
+        const answered=qs.filter((q,i)=>document.querySelector(`input[name="q${i}"]:checked`)).length;
+        document.getElementById("bossProgress").textContent=answered+"/12";
+        document.getElementById("bossBar").style.width=(answered/12*100)+"%";
+      }
+      function gradeQuiz(){
+        if(quizGraded)return;
+        const answered=qs.filter((q,i)=>document.querySelector(`input[name="q${i}"]:checked`)).length;
+        if(answered<qs.length){document.getElementById("quizFeedback").className="feedback warn";document.getElementById("quizFeedback").textContent=`Masih ada ${qs.length-answered} soal yang belum dijawab. Lengkapi seluruh tantangan terlebih dahulu.`;return;}
+        let score=0;
+        qs.forEach((q,i)=>{const ans=document.querySelector(`input[name="q${i}"]:checked`);const ok=+ans.value===q.c;if(ok)score++;const el=document.getElementById("ex"+i);el.textContent=(ok?"✓ Benar. ":"✕ Belum tepat. ")+q.e;el.style.color=ok?"var(--green)":"var(--gold)";});
+        localStorage.setItem("dga_boss_score", String(score));
+        const bonus=Math.round(score/12*300),rank=score>=11?"PRIVACY DEFENDER":score>=9?"SENIOR GUARDIAN":score>=7?"DATA GUARDIAN":"CADET";
+        document.getElementById("bossScore").textContent=score+"/12";document.getElementById("bossRank").textContent=rank;
+        document.getElementById("quizFeedback").className="feedback "+(score>=9?"good":"warn");
+        document.getElementById("quizFeedback").textContent=`Hasil akhir: ${score}/12 benar · ${rank} · +${bonus} XP. ${score===12?"Sempurna! Seluruh kompetensi dikuasai.":score>=9?"Hebat! Anda siap menjadi penjaga data kampus.":"Pelajari pembahasan dan ulangi tantangan untuk meningkatkan hasil."}`;
+        if(!done.has("boss")){done.add("boss");xp+=bonus;}
+        quizGraded=true;document.querySelectorAll('#questions input').forEach(x=>x.disabled=true);document.querySelector("#quiz .btn.primary").disabled=true;update();
+      }
+      function resetBoss(){
+        quizGraded=false;localStorage.removeItem("dga_boss_score");document.querySelector("#quiz .btn.primary").disabled=false;update();
+        document.getElementById("bossScore").textContent="0";document.getElementById("bossRank").textContent="CADET";
+        document.getElementById("quizFeedback").className="feedback";document.getElementById("quizFeedback").textContent="Selesaikan 12 tantangan untuk memperoleh peringkat Privacy Defender.";
+        renderBoss();
+      }
+
+      // Initialize
+      loadProgress();
+      loadStudentIdentity();
+      loadTokenVault();
+      renderClass();
+      renderActor();
+      renderRight();
+      renderPrinciple();
+      renderPrivacyOptions();
+      renderBoss();
+      // Misi 5 kini menggunakan investigasi kasus Digital Forensics.
+      // Log bukti dirender saat mahasiswa menekan tombol "Buka bukti digital".
+      update();
+    </script>
+  </body>
+</html>
