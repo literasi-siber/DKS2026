@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pseudonymization Lab — Data Guardian Academy</title>
+<!-- Library visualisasi grafik dinamis, animasi mikro, dan efek selebrasi -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --bg:#0b1220;
+  --panel:#121d30;
+  --panel2:#18263d;
+  --line:#2a3b56;
+  --text:#edf4ff;
+  --muted:#9fb0c8;
+  --cyan:#55d6e8;
+  --green:#63d6a1;
+  --amber:#ffca70;
+  --red:#ff8585;
+  --purple:#b9a2ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 0%,#17314b 0,transparent 35%),
+    radial-gradient(circle at 85% 20%,#122842 0,transparent 30%),
+    var(--bg);
+  color:var(--text);
+  font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  overflow-x:hidden;
+}
+header{
+  position:relative;
+  padding:28px max(20px,calc((100% - 1160px)/2));
+  border-bottom:1px solid var(--line);
+  background:#0b1220dd;
+  overflow:hidden;
+}
+/* Garis pemindai animasi di bagian bawah header */
+header::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:-40%;
+  width:40%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);
+  animation:scanline 5.5s linear infinite;
+}
+@keyframes scanline{
+  0%{left:-40%}
+  100%{left:100%}
+}
+.eyebrow{
+  color:var(--cyan);
+  font-weight:800;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.live-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+  animation:pulseDot 1.8s infinite;
+}
+@keyframes pulseDot{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(.8)}
+}
+h1{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:8px 0}
+header p{color:var(--muted);max-width:780px;margin:10px 0 0}
+main{max-width:1160px;margin:auto;padding:22px 18px 60px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 20px}
+.tab{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--muted);
+  padding:10px 15px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
+  transition:all .2s ease;
+}
+.tab:hover{border-color:#3d587d;color:var(--text);transform:translateY(-1px)}
+.tab.active{
+  background:#17384a;
+  color:var(--cyan);
+  border-color:#287487;
+  box-shadow:0 4px 14px rgba(85,214,232,.15);
+}
+.view{display:none}
+.view.active{display:block}
+.card{
+  background:linear-gradient(145deg,var(--panel),#101a2b);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 12px 30px #0002;
+}
+h2{margin:0 0 12px;font-size:22px}
+h3{margin:0 0 8px;font-size:17px}
+.muted{color:var(--muted)}
+.small{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+label{display:block;color:#c7d5e8;font-weight:700;font-size:13px;margin:12px 0 6px}
+input,select,textarea{
+  width:100%;
+  background:#0b1525;
+  border:1px solid #354964;
+  color:var(--text);
+  padding:11px 12px;
+  border-radius:10px;
+  font:inherit;
+  transition:border-color .2s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cyan)}
+textarea{min-height:80px;resize:vertical}
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font:700 14px system-ui;
+  cursor:pointer;
+  background:var(--cyan);
+  color:#08202a;
+  transition:transform .15s,box-shadow .2s;
+}
+button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(85,214,232,.25)}
+button.secondary{background:#263851;color:var(--text);border:1px solid #3a506d}
+button.secondary:hover:not(:disabled){box-shadow:0 6px 16px rgba(0,0,0,.25)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.result{
+  background:#081321;
+  border:1px solid #263b55;
+  border-radius:12px;
+  padding:14px;
+  min-height:52px;
+  overflow-wrap:anywhere;
+  font:600 15px ui-monospace,Consolas,monospace;
+}
+.pill{
+  display:inline-block;
+  border-radius:99px;
+  padding:4px 9px;
+  background:#20364d;
+  color:var(--cyan);
+  font-size:12px;
+  font-weight:800;
+}
+.callout{
+  border-left:4px solid var(--amber);
+  padding:10px 13px;
+  background:#30281766;
+  border-radius:7px;
+  color:#f6dfb4;
+  margin-top:12px;
+}
+.good{color:var(--green);border-color:#2f6b53!important;background:#102922!important}
+.bad{color:var(--red);border-color:#6b3232!important;background:#2a1418!important}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th,.table td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.table th{color:var(--cyan)}
+.question{padding:15px;border:1px solid var(--line);border-radius:13px;margin:12px 0;background:#0c1728}
+.option{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  margin:9px 0;
+  font-weight:500;
+  color:var(--text);
+  cursor:pointer;
+  padding:6px 8px;
+  border-radius:8px;
+  transition:background .15s;
+}
+.option:hover{background:#13233b}
+.option input{width:auto;margin-top:5px}
+.feedback{margin-top:10px;padding:12px;border-radius:9px;display:none;background:#0c1728;border:1px solid var(--line)}
+.progress{height:9px;background:#26364c;border-radius:20px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .4s ease}
+footer{text-align:center;color:var(--muted);padding:24px;border-top:1px solid var(--line);font-size:12px}
+
+/* =========================================================
+   1. SIMULATOR MESIN PEMISAH IDENTITAS (TAB 01)
+   ========================================================= */
+.splitter-arena{
+  background:#081220;
+  border:1px solid #28405e;
+  border-radius:16px;
+  padding:18px;
+  margin-top:14px;
+  position:relative;
+  overflow:hidden;
+}
+.splitter-stage{
+  display:grid;
+  grid-template-columns:1fr auto 1.1fr auto 1.2fr;
+  align-items:center;
+  gap:12px;
+  margin-top:12px;
+}
+@media(max-width:860px){
+  .splitter-stage{grid-template-columns:1fr;text-align:center}
+  .split-arrow{transform:rotate(90deg)}
+}
+.packet-card{
+  background:#0f1d33;
+  border:1px solid #355070;
+  border-radius:12px;
+  padding:13px;
+  transition:border-color .3s,box-shadow .3s;
+}
+.packet-card small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.packet-card strong{display:block;margin-top:5px;font:600 13.5px ui-monospace,Consolas,monospace;color:var(--text);line-height:1.45}
+.splitter-core{
+  background:radial-gradient(circle at center,#183850 0,#0d1a2e 100%);
+  border:2px solid var(--cyan);
+  border-radius:14px;
+  padding:14px;
+  text-align:center;
+  box-shadow:0 0 22px rgba(85,214,232,.18);
+  position:relative;
+}
+.core-ring{
+  width:38px;
+  height:38px;
+  margin:0 auto 6px;
+  border-radius:50%;
+  border:2px dashed var(--cyan);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  animation:spinSlow 8s linear infinite;
+}
+@keyframes spinSlow{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.split-arrow{
+  color:var(--cyan);
+  font-weight:900;
+  font-size:20px;
+  animation:arrowPulse 1.5s infinite;
+}
+@keyframes arrowPulse{
+  0%,100%{opacity:.4;transform:translateX(-2px)}
+  50%{opacity:1;transform:translateX(3px)}
+}
+.split-targets{display:flex;flex-direction:column;gap:10px}
+.target-node{
+  background:#0d1a2e;
+  border:1px solid #334e6e;
+  border-radius:11px;
+  padding:11px 13px;
+  transition:all .3s ease;
+}
+.target-node.db-a{border-color:#3d8c78}
+.target-node.db-b{border-color:#a27d3c}
+.target-node.glow-a{box-shadow:0 0 20px rgba(99,214,161,.3);border-color:var(--green);background:#0f2622}
+.target-node.glow-b{box-shadow:0 0 20px rgba(255,202,112,.3);border-color:var(--amber);background:#261f12}
+.target-node small{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.target-node.db-a small{color:var(--green)}
+.target-node.db-b small{color:var(--amber)}
+.target-node code{display:block;margin-top:4px;font:600 13px ui-monospace,Consolas,monospace;color:var(--text)}
+
+/* =========================================================
+   2. STEP-BY-STEP ANIMATED FLOWCHART PLAYER (TAB 02)
+   ========================================================= */
+.flow-player-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  background:#0a1424;
+  border:1px solid #28405e;
+  border-radius:12px;
+  padding:11px 14px;
+  margin-bottom:12px;
+}
+.flowchart{max-width:760px;margin:18px auto;display:flex;flex-direction:column;align-items:center;gap:8px}
+.flowbox{
+  width:min(100%,540px);
+  background:#0c1728;
+  border:1px solid #3a5675;
+  border-radius:12px;
+  padding:13px 16px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  transition:all .3s ease;
+}
+.flowbox b{color:var(--cyan)}
+.flowbox span{font-size:14px}
+.flowbox.step-lit{
+  border-color:var(--cyan)!important;
+  background:#132a42!important;
+  box-shadow:0 0 24px rgba(85,214,232,.32)!important;
+  transform:scale(1.02);
+}
+.flowarrow{
+  font-size:22px;
+  color:var(--cyan);
+  line-height:1;
+  transition:all .25s;
+}
+.flowarrow.arrow-lit{
+  color:var(--green);
+  text-shadow:0 0 12px var(--green);
+  transform:scale(1.25);
+}
+.flowsplit{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.flowbox.data{border-color:#3d8c78}
+.flowbox.data b{color:var(--green)}
+.flowbox.data.step-lit{
+  border-color:var(--green)!important;
+  background:#102923!important;
+  box-shadow:0 0 24px rgba(99,214,161,.32)!important;
+}
+.flowbox.mapping{border-color:#a27d3c}
+.flowbox.mapping b{color:var(--amber)}
+.flowbox.mapping.step-lit{
+  border-color:var(--amber)!important;
+  background:#282012!important;
+  box-shadow:0 0 24px rgba(255,202,112,.32)!important;
+}
+.flowbox em{font-style:normal;color:var(--muted);font-size:12px}
+
+/* =========================================================
+   3. 4-STAGE LIVE PROCESS PIPELINE & DUAL DATABASE (TAB 03)
+   ========================================================= */
+.proc-anim{
+  background:#081220;
+  border:1px solid #28405e;
+  border-radius:14px;
+  padding:14px;
+  margin-top:14px;
+  display:none;
+}
+.proc-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+@media(max-width:760px){.proc-steps,.flowsplit,.dbarchitecture{grid-template-columns:1fr}}
+.pstep{background:#0e1b2f;border:1px solid #273b54;border-radius:10px;padding:10px;transition:all .25s ease}
+.pstep small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.pstep b{display:block;font-size:13px;margin-top:3px;color:var(--text)}
+.pstep span{display:block;font:600 12px ui-monospace,Consolas,monospace;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+.pstep.active{border-color:var(--cyan);background:#12293e;box-shadow:0 0 16px rgba(85,214,232,.22);transform:translateY(-2px)}
+.pstep.active b{color:var(--cyan)}
+.pstep.done{border-color:#2f6b53;background:#0e241f}
+.pstep.done b{color:var(--green)}
+.pstep.error{border-color:#7d3438;background:#2a1216}
+.pstep.error b{color:var(--red)}
+.morph-stream{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#060e19;
+  border:1px dashed #324c6b;
+  font:600 13px ui-monospace,Consolas,monospace;
+  color:var(--cyan);
+  overflow-wrap:anywhere;
+}
+
+.dbarchitecture{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
+.dbcard{background:#0c1728;border:1px solid #3d8c78;border-radius:14px;padding:15px;min-width:0}
+.dbcard.sensitive{border-color:#a27d3c}
+.dbheader{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.dbbadge{
+  font-size:11px;
+  font-weight:800;
+  padding:3px 9px;
+  border-radius:99px;
+  background:#163832;
+  color:var(--green);
+  border:1px solid #2f6b53;
+}
+.dbcard.sensitive .dbbadge{background:#362916;color:var(--amber);border-color:#755726}
+.dbcard .table{font-size:12.5px;table-layout:fixed;overflow-wrap:anywhere}
+.dbcard .table th,.dbcard .table td{padding:8px 6px;overflow-wrap:anywhere}
+.dbcard.sensitive .table th{color:var(--amber)}
+.row-new{animation:flashRow 1.3s ease}
+@keyframes flashRow{
+  0%{background:rgba(85,214,232,.32)}
+  100%{background:transparent}
+}
+.id-chip{
+  background:#14283d;
+  color:var(--cyan);
+  border:1px solid #2b5473;
+  padding:3px 7px;
+  border-radius:6px;
+  font:600 12px ui-monospace,Consolas,monospace;
+  cursor:pointer;
+}
+.id-chip:hover{background:#1b3854}
+
+.scenario-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.scenario-buttons button{background:#263851;color:var(--text);border:1px solid #3a506d}
+.scenario-buttons button.active{background:#17384a;color:var(--cyan);border-color:#287487}
+.chart-box{background:#0c1728;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px;height:215px}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow"><span class="live-dot"></span>Data Guardian Academy · Praktikum Interaktif</div>
+ <h1>PSEUDONYMIZATION LAB</h1>
+ <p>Laboratorium pembelajaran pseudonimisasi. Pelajari cara mengganti identitas langsung dengan kode samaran, memisahkan informasi penghubung, dan mengurangi risiko identitas seseorang terungkap.</p>
+</header>
+
+<main>
+ <nav class="tabs" aria-label="Navigasi pembelajaran">
+  <button class="tab active" data-view="belajar">01 · Pahami konsep</button>
+  <button class="tab" data-view="contoh">02 · Lihat contoh</button>
+  <button class="tab" data-view="praktik">03 · Praktik langsung</button>
+  <button class="tab" data-view="mission">04 · Mission</button>
+  <button class="tab" data-view="evaluasi">05 · Evaluasi</button>
+ </nav>
+
+ <!-- =========================================================
+      TAB 01: PAHAMI KONSEP + IDENTITY-SPLITTING MACHINE
+      ========================================================= -->
+ <section class="view active" id="belajar">
+  <div class="card">
+   <span class="pill">TUJUAN PEMBELAJARAN</span>
+   <h2 style="margin-top:10px">Apa itu pseudonimisasi?</h2>
+   <p class="muted"><b>Pseudonimisasi</b> adalah pemrosesan data pribadi dengan cara mengganti identitas langsung seseorang menggunakan kode atau nama samaran, sehingga data tidak lagi dapat dikaitkan dengan orang tersebut tanpa menggunakan informasi tambahan.</p>
+   <div class="callout"><b>Gagasan utamanya:</b> data masih dapat digunakan untuk tujuan tertentu, tetapi identitas langsung dipisahkan dari dataset utama. Informasi tambahan yang dapat menghubungkan kode dengan identitas asli harus disimpan terpisah dan dilindungi.</div>
+  </div>
+
+  <!-- Interactive Identity-Splitting Machine Visualizer -->
+  <div class="card">
+   <span class="pill">VISUALISASI INTERAKTIF</span>
+   <h2 style="margin-top:10px">Simulator Mesin Pemisah Identitas (Identity Splitter)</h2>
+   <p class="muted">Klik tombol simulasi di bawah untuk melihat bagaimana satu paket data pribadi dipecah menjadi <b>Dataset Analisis</b> dan <b>Tabel Penghubung Terbatas</b>, atau bagaimana keduanya dicocokkan kembali saat otorisasi sah diberikan.</p>
+   <div class="actions" style="margin-top:8px">
+    <button type="button" id="simSplitBtn">Simulasikan Pemisahan</button>
+    <button type="button" class="secondary" id="simReidentifyBtn">Simulasikan Re-identifikasi</button>
+   </div>
+   <div class="splitter-arena">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+     <span class="small" id="splitterStatusText" style="color:var(--cyan);font-weight:700">Siap — klik tombol simulasi untuk menjalankan animasi pemisahan data.</span>
+     <span class="pill" id="splitterModeBadge">MODE: STANDBY</span>
+    </div>
+    <div class="splitter-stage">
+     <div class="packet-card" id="rawPacketCard">
+      <small>Paket Data Mentah</small>
+      <strong>Nama: Andi Saputra<br>NIM: 3312401001<br>Nilai: 87</strong>
+     </div>
+     <div class="split-arrow" id="splitArrow1">➔</div>
+     <div class="splitter-core" id="splitterCore">
+      <div class="core-ring">⇄</div>
+      <b style="color:var(--cyan);font-size:14px">Pseudonym Engine</b>
+      <div class="small" style="margin-top:3px">Pecah Atribut &amp; Petakan ID</div>
+     </div>
+     <div class="split-arrow" id="splitArrow2">➔</div>
+     <div class="split-targets">
+      <div class="target-node db-a" id="targetNodeA">
+       <small>Jalur A · Dataset Analisis</small>
+       <code>ID-PESERTA-001 · Nilai: 87</code>
+      </div>
+      <div class="target-node db-b" id="targetNodeB">
+       <small>Jalur B · Tabel Penghubung (Terbatas)</small>
+       <code>ID-PESERTA-001 ↔ Andi (3312401001)</code>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2>Bagaimana identitas dapat diketahui kembali?</h2>
+   <p class="muted">Informasi penghubung disimpan terpisah dari dataset pseudonim. Hanya pihak yang berwenang dan memiliki alasan yang sah yang boleh mengaksesnya.</p>
+   <table class="table">
+    <thead><tr><th>Dataset pseudonim</th><th>Informasi penghubung (disimpan terpisah)</th></tr></thead>
+    <tbody>
+     <tr><td>ID-PESERTA-001 · Nilai 87</td><td>ID-PESERTA-001 → Andi Saputra · NIM 3312401001</td></tr>
+     <tr><td>ID-PESERTA-002 · Nilai 91</td><td>ID-PESERTA-002 → Siti Rahma · NIM 3312401002</td></tr>
+    </tbody>
+   </table>
+   <div class="callout">Jika informasi penghubung ikut tersebar atau dapat diakses tanpa izin, identitas seseorang dapat terungkap. Karena itu, pemisahan dan pengamanan informasi tambahan sangat penting.</div>
+  </div>
+
+  <div class="card">
+   <h2>Pseudonimisasi bukan anonimisasi</h2>
+   <div class="grid">
+    <div><h3 style="color:var(--cyan)">Pseudonimisasi</h3><p class="muted">Identitas langsung diganti dengan kode. Identitas masih mungkin diketahui kembali dengan informasi tambahan.</p><span class="pill">Masih termasuk data pribadi</span></div>
+    <div><h3 style="color:var(--green)">Anonimisasi</h3><p class="muted">Data diolah sehingga seseorang tidak dapat lagi diidentifikasi, baik secara langsung maupun tidak langsung, dengan cara yang wajar dan relevan.</p><span class="pill">Tidak dapat diidentifikasi</span></div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2>Bedakan dengan masking dan tokenisasi</h2>
+   <table class="table">
+    <thead><tr><th>Teknik</th><th>Contoh</th><th>Fokus</th></tr></thead>
+    <tbody>
+     <tr><td>Masking</td><td>0812•••••890</td><td>Menyamarkan tampilan nilai.</td></tr>
+     <tr><td>Pseudonimisasi</td><td>ID-PESERTA-001</td><td>Mengganti identitas langsung dengan kode samaran; informasi penghubung disimpan terpisah.</td></tr>
+     <tr><td>Tokenisasi</td><td>TK-8X92A</td><td>Mengganti nilai sensitif dengan token yang dikelola melalui sistem pemetaan token.</td></tr>
+    </tbody>
+   </table>
+  </div>
+ </section>
+
+ <!-- =========================================================
+      TAB 02: LIHAT CONTOH + ANIMATED FLOWCHART PLAYER
+      ========================================================= -->
+ <section class="view" id="contoh">
+  <div class="card">
+   <span class="pill">CONTOH KASUS</span>
+   <h2 style="margin-top:10px">Penelitian nilai mahasiswa</h2>
+   <p class="muted">Dosen ingin menganalisis hubungan kehadiran dan nilai mahasiswa. Untuk analisis, dosen tidak perlu melihat nama dan NIM mahasiswa pada setiap baris data.</p>
+   <table class="table">
+    <thead><tr><th>Data awal</th><th>Dataset pseudonim</th></tr></thead>
+    <tbody>
+     <tr><td>Andi Saputra · 3312401001 · Kehadiran 90% · Nilai 87</td><td>ID-PESERTA-001 · Kehadiran 90% · Nilai 87</td></tr>
+     <tr><td>Siti Rahma · 3312401002 · Kehadiran 95% · Nilai 91</td><td>ID-PESERTA-002 · Kehadiran 95% · Nilai 91</td></tr>
+     <tr><td>Budi Santoso · 3312401003 · Kehadiran 80% · Nilai 78</td><td>ID-PESERTA-003 · Kehadiran 80% · Nilai 78</td></tr>
+    </tbody>
+   </table>
+   <p class="small">Nama dan NIM di atas merupakan data fiktif untuk pembelajaran.</p>
+  </div>
+
+  <div class="card">
+   <h2>Bagan alur pseudonimisasi (Simulasi Bertahap)</h2>
+   <p class="muted">Putar simulasi alur untuk menyoroti perpindahan data dari identitas awal hingga penyimpanan terpisah pada Database A dan Database B.</p>
+   <div class="flow-player-bar">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+     <button type="button" id="playFlowBtn">Putar Simulasi Alur</button>
+     <span class="small" id="flowStepCaption">Klik tombol untuk menelusuri alur langkah demi langkah.</span>
+    </div>
+    <div style="min-width:160px;flex:1;max-width:240px">
+     <div class="progress"><span id="flowProgressBar"></span></div>
+    </div>
+   </div>
+
+   <div class="flowchart">
+    <div class="flowbox" id="fstage1"><b>1. Data awal</b><span>Nama: Andi Saputra · NIM: 3312401001 · Nilai: 87</span></div>
+    <div class="flowarrow" id="farrow1">↓</div>
+    <div class="flowbox" id="fstage2"><b>2. Pisahkan identitas &amp; buat kode samaran</b><span>ID-PESERTA-001 dibuat untuk mewakili catatan Andi tanpa membawa nama/NIM langsung.</span></div>
+    <div class="flowarrow" id="farrow2">↓</div>
+    <div class="flowsplit">
+     <div class="flowbox data" id="fstage3a"><b>3A. Database A — Dataset pseudonim</b><span>ID-PESERTA-001 · Nilai: 87</span><em>Digunakan tim analisis</em></div>
+     <div class="flowbox mapping" id="fstage3b"><b>3B. Database B — Tabel penghubung</b><span>ID-PESERTA-001 ↔ Andi Saputra (3312401001)</span><em>Disimpan terpisah dan akses dibatasi</em></div>
+    </div>
+   </div>
+   <div class="callout">Kunci pseudonimisasi adalah pemisahan: dataset untuk analisis tidak membawa nama/NIM langsung, sedangkan informasi yang menghubungkan kode ke identitas asli disimpan di tempat terpisah.</div>
+  </div>
+ </section>
+
+ <!-- =========================================================
+      TAB 03: PRAKTIK LANGSUNG + 4-STAGE PIPELINE + DUAL DB
+      ========================================================= -->
+ <section class="view" id="praktik">
+  <div class="card">
+   <span class="pill">PRAKTIK LANGSUNG</span>
+   <h2 style="margin-top:10px">Buat &amp; simpan record pseudonim ke database simulasi</h2>
+   <p class="muted">Masukkan data fiktif. Setiap kali tombol <b>Buat &amp; simpan pseudonim</b> ditekan, sistem akan menjalankan pipeline pemisahan data dan menyimpannya ke dua tabel database simulasi terpisah di bawah ini.</p>
+   <div class="grid">
+    <div>
+     <label for="personName">Nama contoh</label><input id="personName" value="Andi Saputra" maxlength="40">
+     <label for="personId">NIM contoh</label><input id="personId" value="3312401001" maxlength="20">
+     <label for="personScore">Nilai (0–100)</label><input id="personScore" type="number" min="0" max="100" value="87">
+     <div class="actions">
+      <button id="createPseudo">Buat &amp; simpan pseudonim</button>
+      <button type="button" class="secondary" id="resetPseudo">Reset database simulasi</button>
+     </div>
+    </div>
+    <div>
+     <label>Output ke Database A (Dataset Analisis)</label>
+     <div class="result" id="pseudoDataset" style="color:var(--green)">Belum ada data baru. Klik “Buat &amp; simpan pseudonim”.</div>
+     <label>Output ke Database B (Tabel Penghubung)</label>
+     <div class="result" id="pseudoMap" style="color:var(--amber)">Belum ada pemetaan baru.</div>
+     <div class="callout">Data simulasi dimulai dalam kondisi kosong (0 baris) dan disimpan secara lokal di browser (<i>localStorage</i>) saat Anda membuat record. Gunakan hanya data fiktif.</div>
+    </div>
+   </div>
+
+   <!-- 4-Stage Live Process Pipeline Animation -->
+   <div id="procAnimPanel" class="proc-anim">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+     <span class="pill" id="procModeBadge">PIPELINE PSEUDONIMISASI</span>
+     <span class="small" id="procStatusText">Menunggu eksekusi...</span>
+    </div>
+    <div class="progress" style="margin-top:10px"><span id="procBar"></span></div>
+    <div class="proc-steps">
+     <div class="pstep" id="pstep1"><small>Tahap 1</small><b id="pstep1Title">Validasi Input</b><span id="pstep1Val">—</span></div>
+     <div class="pstep" id="pstep2"><small>Tahap 2</small><b id="pstep2Title">Generate ID</b><span id="pstep2Val">—</span></div>
+     <div class="pstep" id="pstep3"><small>Tahap 3</small><b id="pstep3Title">Pecah Atribut</b><span id="pstep3Val">—</span></div>
+     <div class="pstep" id="pstep4"><small>Tahap 4</small><b id="pstep4Title">Commit DB A &amp; B</b><span id="pstep4Val">—</span></div>
+    </div>
+    <div class="morph-stream" id="morphStream">Stream transformasi: —</div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2>Arsitektur Penyimpanan Terpisah (Database Simulasi)</h2>
+   <p class="muted">Perhatikan bagaimana satu entri data dipecah menjadi dua penyimpanan terpisah: <b>Database A</b> hanya berisi kode samaran, nilai akademik, dan stempel waktu sistem (<code>YYYY-MM-DD HH:MM:SS</code>), sedangkan <b>Database B</b> menyimpan tabel penghubung identitas.</p>
+   <div class="dbarchitecture">
+    <div class="dbcard">
+     <div class="dbheader">
+      <b style="color:var(--green)">Database A — Dataset Analisis</b>
+      <span class="dbbadge">Akses Tim Analis</span>
+     </div>
+     <span class="small">Tanpa nama &amp; NIM langsung (klik ID untuk salin ke pencarian)</span>
+     <div style="overflow-x:auto;margin-top:8px">
+      <table class="table">
+       <thead><tr><th style="width:42px">No.</th><th>ID Samaran</th><th style="width:58px">Nilai</th><th>Waktu</th></tr></thead>
+       <tbody id="dbATableBody"><tr><td colspan="4">Belum ada data di Database A.</td></tr></tbody>
+      </table>
+     </div>
+     <p class="small" id="dbACount" style="margin-top:8px">Total baris: 0</p>
+    </div>
+
+    <div class="dbcard sensitive">
+     <div class="dbheader">
+      <b style="color:var(--amber)">Database B — Tabel Penghubung</b>
+      <span class="dbbadge">Akses Terbatas</span>
+     </div>
+     <span class="small">Menyimpan relasi ID Samaran ↔ Identitas Asli</span>
+     <div style="overflow-x:auto;margin-top:8px">
+      <table class="table">
+       <thead><tr><th>ID Samaran</th><th>Nama Contoh</th><th>NIM Contoh</th></tr></thead>
+       <tbody id="dbBTableBody"><tr><td colspan="3">Belum ada pemetaan di Database B.</td></tr></tbody>
+      </table>
+     </div>
+     <p class="small" id="dbBCount" style="margin-top:8px">Total pemetaan: 0</p>
+    </div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2>Simulasikan identifikasi kembali (Re-identification Lookup)</h2>
+   <p class="muted">Dalam keadaan sah (misalnya koreksi nilai oleh petugas berwenang), sistem mencocokkan <b>ID Samaran</b> dari Database A dengan <b>Tabel Penghubung</b> di Database B.</p>
+   <label for="pseudoLookup">Masukkan ID Samaran yang akan dicari</label>
+   <input id="pseudoLookup" placeholder="Contoh: ID-PESERTA-001" autocomplete="off">
+   <div class="actions">
+    <button type="button" class="secondary" id="reidentifyBtn">Cocokkan di Database B</button>
+    <button type="button" class="secondary" id="useLatestPseudo">Gunakan ID terakhir</button>
+   </div>
+   <div id="reidentifyResult" class="feedback">Hasil pencocokan akan muncul di sini.</div>
+  </div>
+
+  <div class="card">
+   <h2>Uji risiko kebocoran (Grafik Dampak)</h2>
+   <p class="muted">Pilih skenario kebocoran untuk membandingkan tingkat eksposur identitas dan efektivitas isolasi database:</p>
+   <div class="scenario-buttons">
+    <button type="button" data-risk="dbA">1. Database A saja bocor</button>
+    <button type="button" data-risk="dbB">2. Database B saja bocor</button>
+    <button type="button" data-risk="both">3. Database A &amp; B bocor bersama</button>
+   </div>
+   <div id="riskInfo" class="feedback">Pilih salah satu skenario di atas untuk melihat analisis dampak dan grafik risiko.</div>
+   <div class="chart-box">
+    <canvas id="riskChart"></canvas>
+   </div>
+  </div>
+ </section>
+
+ <!-- =========================================================
+      TAB 04: MISSION
+      ========================================================= -->
+ <section class="view" id="mission">
+  <div class="card">
+   <span class="pill">MISSION · PSEUDONYMIZATION DECISION</span>
+   <h2 style="margin-top:10px">Pilih tindakan yang paling tepat</h2>
+   <p class="muted">Baca skenario, perhatikan contoh data, lalu pilih tindakan. Setelah menjawab, lihat bentuk data yang dihasilkan dari pilihan Anda.</p>
+   <div id="missionArea"></div>
+   <div class="actions">
+    <button type="button" id="checkMission">Periksa jawaban</button>
+    <button type="button" class="secondary" id="nextMission">Soal berikutnya</button>
+   </div>
+   <div id="missionFeedback" class="feedback"></div>
+   <div class="small" style="margin-top:12px">Skor tantangan: <b id="missionScore">0</b> / 5</div>
+   <div class="progress" style="margin-top:8px"><span id="missionProgress"></span></div>
+  </div>
+ </section>
+
+ <!-- =========================================================
+      TAB 05: EVALUASI (TANPA TOMBOL CETAK RINGKASAN)
+      ========================================================= -->
+ <section class="view" id="evaluasi">
+  <div class="card">
+   <h2>Evaluasi pemahaman</h2>
+   <p class="muted">Jawab pertanyaan berikut untuk mengukur pemahaman Anda.</p>
+   <form id="quizForm">
+    <div id="quizArea"></div>
+    <button type="submit">Kirim jawaban</button>
+   </form>
+   <div id="quizResult" class="feedback"></div>
+  </div>
+  <div class="card">
+   <h2>Catatan belajar</h2>
+   <label for="reflection">Tuliskan perbedaan pseudonimisasi dan anonimisasi dengan kata-kata Anda sendiri.</label>
+   <textarea id="reflection" placeholder="Menurut saya, pseudonimisasi adalah..."></textarea>
+   <div class="actions">
+    <button type="button" id="saveReflection">Simpan catatan</button>
+   </div>
+   <p id="saveStatus" class="small"></p>
+   <p class="small">Catatan tersimpan secara lokal pada browser/perangkat ini dan tidak dikirim ke server.</p>
+  </div>
+ </section>
+</main>
+
+<footer>Pseudonymization Lab · Media pembelajaran Dasar Keamanan Siber · Gunakan hanya data fiktif untuk praktikum</footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+// Format waktu standar sistem YYYY-MM-DD HH:MM:SS (24 jam dengan leading zero)
+function formatSystemTimestamp(date=new Date()){
+ const pad=n=>String(n).padStart(2,"0");
+ return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+// =========================================================
+// 1. SIMULATOR MESIN PEMISAH IDENTITAS (TAB 01)
+// =========================================================
+let splitterRunning=false;
+$("simSplitBtn").onclick=async()=>{
+ if(splitterRunning) return;
+ splitterRunning=true;
+ $("simSplitBtn").disabled=true;
+ $("simReidentifyBtn").disabled=true;
+
+ const status=$("splitterStatusText");
+ const badge=$("splitterModeBadge");
+ const rawCard=$("rawPacketCard");
+ const core=$("splitterCore");
+ const nodeA=$("targetNodeA");
+ const nodeB=$("targetNodeB");
+
+ nodeA.classList.remove("glow-a");
+ nodeB.classList.remove("glow-b");
+ badge.textContent="MODE: SPLITTING";
+ badge.style.color="var(--cyan)";
+ status.textContent="1/3 Membaca atribut paket data mentah...";
+
+ if(typeof gsap!=="undefined"){
+  gsap.fromTo(rawCard,{scale:1,borderColor:"#355070"},{scale:1.03,borderColor:"#55d6e8",duration:.3,yoyo:true,repeat:1});
+ }
+ await wait(420);
+
+ status.textContent="2/3 Pseudonym Engine memecah identitas & membuat ID-PESERTA-001...";
+ if(typeof gsap!=="undefined"){
+  gsap.fromTo(core,{scale:.96},{scale:1.05,duration:.3,yoyo:true,repeat:1});
+ }
+ await wait(450);
+
+ status.textContent="3/3 Menyimpan dataset ke Database A dan relasi identitas ke Database B.";
+ nodeA.classList.add("glow-a");
+ nodeB.classList.add("glow-b");
+ if(typeof gsap!=="undefined"){
+  gsap.fromTo([nodeA,nodeB],{x:-10,opacity:.7},{x:0,opacity:1,duration:.35,stagger:.12});
+ }
+ badge.textContent="TERPISAH AMAN";
+ badge.style.color="var(--green)";
+ splitterRunning=false;
+ $("simSplitBtn").disabled=false;
+ $("simReidentifyBtn").disabled=false;
+};
+
+$("simReidentifyBtn").onclick=async()=>{
+ if(splitterRunning) return;
+ splitterRunning=true;
+ $("simSplitBtn").disabled=true;
+ $("simReidentifyBtn").disabled=true;
+
+ const status=$("splitterStatusText");
+ const badge=$("splitterModeBadge");
+ const rawCard=$("rawPacketCard");
+ const core=$("splitterCore");
+ const nodeA=$("targetNodeA");
+ const nodeB=$("targetNodeB");
+
+ badge.textContent="MODE: RE-IDENTIFICATION";
+ badge.style.color="var(--amber)";
+ status.textContent="1/2 Petugas berwenang meminta pencocokan ID-PESERTA-001 pada Jalur B...";
+ nodeA.classList.add("glow-a");
+ nodeB.classList.add("glow-b");
+ if(typeof gsap!=="undefined"){
+  gsap.fromTo([nodeA,nodeB],{scale:.98},{scale:1.03,duration:.28,yoyo:true,repeat:1});
+ }
+ await wait(520);
+
+ status.textContent="2/2 Identitas berhasil ditautkan kembali melalui Pseudonym Engine.";
+ if(typeof gsap!=="undefined"){
+  gsap.fromTo(core,{scale:.97},{scale:1.04,duration:.25,yoyo:true,repeat:1});
+  gsap.fromTo(rawCard,{borderColor:"#355070"},{borderColor:"#ffca70",duration:.35});
+ }
+ badge.textContent="TERIDENTIFIKASI (SAH)";
+ badge.style.color="var(--amber)";
+ splitterRunning=false;
+ $("simSplitBtn").disabled=false;
+ $("simReidentifyBtn").disabled=false;
+};
+
+// =========================================================
+// 2. STEP-BY-STEP ANIMATED FLOWCHART PLAYER (TAB 02)
+// =========================================================
+let flowPlaying=false;
+$("playFlowBtn").onclick=async()=>{
+ if(flowPlaying) return;
+ flowPlaying=true;
+ $("playFlowBtn").disabled=true;
+
+ const s1=$("fstage1"),s2=$("fstage2"),s3a=$("fstage3a"),s3b=$("fstage3b");
+ const a1=$("farrow1"),a2=$("farrow2");
+ const bar=$("flowProgressBar");
+ const cap=$("flowStepCaption");
+
+ [s1,s2,s3a,s3b].forEach(el=>el.classList.remove("step-lit"));
+ [a1,a2].forEach(el=>el.classList.remove("arrow-lit"));
+ bar.style.width="0%";
+
+ cap.textContent="Tahap 1: Menerima data identitas lengkap (Nama, NIM, Nilai).";
+ s1.classList.add("step-lit");
+ bar.style.width="33%";
+ await wait(700);
+
+ a1.classList.add("arrow-lit");
+ cap.textContent="Tahap 2: Memisahkan nama & NIM lalu menghasilkan kode ID-PESERTA-001.";
+ s2.classList.add("step-lit");
+ bar.style.width="66%";
+ await wait(800);
+
+ a2.classList.add("arrow-lit");
+ cap.textContent="Tahap 3A & 3B: Dataset analisis masuk ke Database A, tabel penghubung dikunci di Database B.";
+ s3a.classList.add("step-lit");
+ s3b.classList.add("step-lit");
+ bar.style.width="100%";
+ await wait(1200);
+
+ flowPlaying=false;
+ $("playFlowBtn").disabled=false;
+};
+
+// =========================================================
+// 3. DATABASE SIMULASI KOSONG-DI-AWAL & PIPELINE 4 TAHAP (TAB 03)
+// =========================================================
+const PSEUDO_STORAGE_KEY="pseudonymizationLabDB_v2";
+let pseudoDB=[];
+
+try{
+ const saved=JSON.parse(localStorage.getItem(PSEUDO_STORAGE_KEY)||"[]");
+ pseudoDB=Array.isArray(saved)
+  ?saved.filter(x=>x&&typeof x.code==="string"&&typeof x.name==="string"&&typeof x.nim==="string")
+  :[];
+}catch(e){
+ pseudoDB=[];
+}
+
+function savePseudoDB(){
+ try{localStorage.setItem(PSEUDO_STORAGE_KEY,JSON.stringify(pseudoDB));}
+ catch(e){console.warn("Penyimpanan lokal tidak tersedia.",e);}
+}
+
+function getNextPseudoCode(){
+ let maxNum=0;
+ pseudoDB.forEach(r=>{
+  const match=r.code.match(/ID-PESERTA-(\d+)/i);
+  if(match){
+   const num=parseInt(match[1],10);
+   if(num>maxNum) maxNum=num;
+  }
+ });
+ return "ID-PESERTA-"+String(maxNum+1).padStart(3,"0");
+}
+
+function renderDatabases(highlightLast=false){
+ const bodyA=$("dbATableBody");
+ const bodyB=$("dbBTableBody");
+ if(!pseudoDB.length){
+  bodyA.innerHTML='<tr><td colspan="4">Belum ada data di Database A.</td></tr>';
+  bodyB.innerHTML='<tr><td colspan="3">Belum ada pemetaan di Database B.</td></tr>';
+  $("dbACount").textContent="Total baris: 0";
+  $("dbBCount").textContent="Total pemetaan: 0";
+  return;
+ }
+ bodyA.innerHTML=pseudoDB.map((row,idx)=>{
+  const isLast=highlightLast&&idx===pseudoDB.length-1;
+  return `<tr class="${isLast?"row-new":""}"><td>${idx+1}</td><td><button type="button" class="id-chip" data-copy-id="${escapeHTML(row.code)}" title="Klik untuk menyalin ke pencarian">${escapeHTML(row.code)}</button></td><td>${escapeHTML(row.score)}</td><td class="small">${escapeHTML(row.createdAt||"—")}</td></tr>`;
+ }).join("");
+ bodyB.innerHTML=pseudoDB.map((row,idx)=>{
+  const isLast=highlightLast&&idx===pseudoDB.length-1;
+  return `<tr class="${isLast?"row-new":""}"><td><b style="color:var(--amber)">${escapeHTML(row.code)}</b></td><td>${escapeHTML(row.name)}</td><td>${escapeHTML(row.nim)}</td></tr>`;
+ }).join("");
+
+ bodyA.querySelectorAll("[data-copy-id]").forEach(chip=>{
+  chip.onclick=()=>{
+   $("pseudoLookup").value=chip.dataset.copyId;
+   if(typeof gsap!=="undefined") gsap.fromTo("#pseudoLookup",{scale:.98},{scale:1,duration:.2});
+  };
+ });
+
+ $("dbACount").textContent="Total baris: "+pseudoDB.length;
+ $("dbBCount").textContent="Total pemetaan: "+pseudoDB.length;
+}
+
+renderDatabases(false);
+
+// Helper animasi pipeline 4 tahap
+function resetProcPipeline(badgeLabel){
+ $("procAnimPanel").style.display="block";
+ $("procModeBadge").textContent=badgeLabel;
+ $("procBar").style.width="0%";
+ for(let i=1;i<=4;i++){
+  $("pstep"+i).className="pstep";
+  $("pstep"+i+"Val").textContent="—";
+ }
+}
+function setProcStep(step,state,title,val,pct){
+ const el=$("pstep"+step);
+ el.className="pstep "+state;
+ if(title) $("pstep"+step+"Title").textContent=title;
+ if(val!==undefined) $("pstep"+step+"Val").textContent=val;
+ if(pct!==undefined) $("procBar").style.width=pct+"%";
+}
+function morphTextStream(startStr,endStr,durationMs=380,finalColor="var(--green)"){
+ const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-#";
+ const box=$("morphStream");
+ box.style.color="var(--cyan)";
+ return new Promise(resolve=>{
+  const t0=performance.now();
+  const timer=setInterval(()=>{
+   const ratio=Math.min(1,(performance.now()-t0)/durationMs);
+   const splitAt=Math.floor(endStr.length*ratio);
+   let scrambled="";
+   for(let i=splitAt;i<endStr.length;i++){
+    scrambled+=chars[Math.floor(Math.random()*chars.length)];
+   }
+   box.textContent="Transformasi: "+endStr.slice(0,splitAt)+scrambled;
+   if(ratio>=1){
+    clearInterval(timer);
+    box.style.color=finalColor;
+    box.textContent="Hasil akhir: "+endStr;
+    resolve();
+   }
+  },35);
+ });
+}
+
+let isBusy=false;
+
+$("createPseudo").onclick=async()=>{
+ if(isBusy) return;
+ const name=$("personName").value.trim();
+ const nim=$("personId").value.trim();
+ const score=$("personScore").value.trim();
+ if(!name||!nim||score===""||Number(score)<0||Number(score)>100){
+  const box=$("reidentifyResult");
+  box.style.display="block";
+  box.className="feedback bad";
+  box.textContent="Lengkapi nama, NIM, dan nilai 0–100 menggunakan data fiktif.";
+  if(typeof gsap!=="undefined") gsap.fromTo(box,{x:-6},{x:6,duration:.06,repeat:4,yoyo:true,clearProps:"x"});
+  return;
+ }
+
+ isBusy=true;
+ $("createPseudo").disabled=true;
+ $("reidentifyBtn").disabled=true;
+ $("reidentifyResult").style.display="none";
+ resetProcPipeline("ANIMASI PEMISAHAN PSEUDONIM");
+
+ try{
+  const newCode=getNextPseudoCode();
+  const ts=formatSystemTimestamp();
+
+  $("procStatusText").textContent="Memvalidasi atribut identitas & nilai...";
+  setProcStep(1,"active","Validasi Input",`${name} (${nim})`,25);
+  await wait(260);
+  setProcStep(1,"done","Validasi Input","Data valid",25);
+
+  $("procStatusText").textContent="Menghasilkan kode samaran unik...";
+  setProcStep(2,"active","Generate ID","Membentuk kode...",50);
+  await morphTextStream(`${name} | ${nim}`,`${newCode} | Nilai: ${Number(score)}`,380,"var(--cyan)");
+  setProcStep(2,"done","Generate ID",newCode,50);
+
+  $("procStatusText").textContent="Memisahkan payload analisis & tabel penghubung...";
+  setProcStep(3,"active","Pecah Atribut","DB A vs DB B",75);
+  await wait(280);
+  setProcStep(3,"done","Pecah Atribut","2 jalur terisolasi",75);
+
+  $("procStatusText").textContent="Menyimpan ke Database A & Database B...";
+  setProcStep(4,"active","Commit DB A & B",ts,90);
+  const record={
+   code:newCode,
+   name,
+   nim,
+   score:String(Number(score)),
+   createdAt:ts
+  };
+  pseudoDB.push(record);
+  savePseudoDB();
+  await wait(220);
+  setProcStep(4,"done","Commit DB A & B","Tersimpan",100);
+  $("procStatusText").textContent="Selesai — identitas dipisahkan ke Database B";
+  $("morphStream").style.color="var(--green)";
+  $("morphStream").textContent=`DB A: [${record.code} | Nilai: ${record.score}]  ||  DB B: [${record.code} ↔ ${record.name}]`;
+
+  $("pseudoDataset").textContent=`${record.code} | Nilai: ${record.score}`;
+  $("pseudoMap").textContent=`${record.code} → ${record.name} | NIM ${record.nim}`;
+  $("pseudoLookup").value=record.code;
+  renderDatabases(true);
+  if(typeof gsap!=="undefined"){
+   gsap.fromTo("#pseudoDataset,#pseudoMap",{scale:.97,opacity:.7},{scale:1,opacity:1,duration:.25});
+  }
+ }finally{
+  isBusy=false;
+  $("createPseudo").disabled=false;
+  $("reidentifyBtn").disabled=false;
+ }
+};
+
+$("resetPseudo").onclick=()=>{
+ $("personName").value="Andi Saputra";
+ $("personId").value="3312401001";
+ $("personScore").value="87";
+ pseudoDB=[];
+ savePseudoDB();
+ $("pseudoDataset").textContent="Belum ada data baru. Klik “Buat & simpan pseudonim”.";
+ $("pseudoMap").textContent="Belum ada pemetaan baru.";
+ $("pseudoLookup").value="";
+ $("reidentifyResult").style.display="none";
+ $("procAnimPanel").style.display="none";
+ renderDatabases(false);
+};
+
+$("useLatestPseudo").onclick=()=>{
+ if(!pseudoDB.length){
+  const box=$("reidentifyResult");
+  box.style.display="block";
+  box.className="feedback bad";
+  box.textContent="Belum ada data di database simulasi. Buat record pseudonim terlebih dahulu.";
+  return;
+ }
+ $("pseudoLookup").value=pseudoDB[pseudoDB.length-1].code;
+ if(typeof gsap!=="undefined") gsap.fromTo("#pseudoLookup",{scale:.98},{scale:1,duration:.2});
+};
+
+$("reidentifyBtn").onclick=async()=>{
+ if(isBusy) return;
+ const box=$("reidentifyResult");
+ const query=$("pseudoLookup").value.trim();
+ if(!query){
+  box.style.display="block";
+  box.className="feedback bad";
+  box.textContent="Masukkan ID Samaran (misalnya ID-PESERTA-001) yang ingin dicari.";
+  return;
+ }
+
+ isBusy=true;
+ $("createPseudo").disabled=true;
+ $("reidentifyBtn").disabled=true;
+ box.style.display="none";
+ resetProcPipeline("ANIMASI RE-IDENTIFICATION LOOKUP");
+
+ try{
+  $("procStatusText").textContent="Menerima permintaan pencarian terotorisasi...";
+  setProcStep(1,"active","Kueri ID",query,25);
+  await wait(240);
+  setProcStep(1,"done","Kueri ID",query,25);
+
+  $("procStatusText").textContent="Memverifikasi akses ke Database B (Tabel Penghubung)...";
+  setProcStep(2,"active","Otorisasi DB B","Memeriksa indeks...",55);
+  await wait(260);
+  const found=pseudoDB.find(r=>r.code.toLowerCase()===query.toLowerCase());
+
+  if(!found){
+   setProcStep(2,"error","Otorisasi DB B","ID tidak ditemukan",100);
+   setProcStep(3,"error","Pencocokan","Nihil",100);
+   setProcStep(4,"error","Hasil","Ditolak",100);
+   $("procStatusText").textContent="Pencarian gagal — ID Samaran tidak terdaftar";
+   $("morphStream").style.color="var(--red)";
+   $("morphStream").textContent="Hasil: [NOT_FOUND — TIDAK ADA RELASI DI DATABASE B]";
+   box.style.display="block";
+   box.className="feedback bad";
+   box.textContent="ID Samaran tidak ditemukan di Database B (Tabel Penghubung).";
+   if(typeof gsap!=="undefined") gsap.fromTo(box,{x:-6},{x:6,duration:.06,repeat:4,yoyo:true,clearProps:"x"});
+   return;
+  }
+
+  setProcStep(2,"done","Otorisasi DB B","Akses sah",55);
+  $("procStatusText").textContent="Menautkan kode samaran dengan identitas asli...";
+  setProcStep(3,"active","Pencocokan","Menarik relasi...",80);
+  await morphTextStream(found.code,`${found.name} (NIM: ${found.nim})`,380,"var(--amber)");
+  setProcStep(3,"done","Pencocokan","Relasi cocok",80);
+
+  setProcStep(4,"done","Audit & Hasil","Tercatat",100);
+  $("procStatusText").textContent="Identifikasi kembali berhasil pada simulasi";
+
+  box.style.display="block";
+  box.className="feedback good";
+  box.innerHTML=`<b>Pencocokan berhasil (Simulasi Otorisasi Database B)</b>
+   <p style="margin:6px 0">ID Samaran: <b>${escapeHTML(found.code)}</b> → Nama: <b>${escapeHTML(found.name)}</b> | NIM: <b>${escapeHTML(found.nim)}</b></p>
+   <p class="small" style="margin:0">Nilai pada Database A: ${escapeHTML(found.score)} · Waktu dibuat: <code>${escapeHTML(found.createdAt||"—")}</code>. Dalam sistem nyata, akses ke Database B harus dibatasi dan dicatat pada log audit.</p>`;
+  if(typeof gsap!=="undefined") gsap.fromTo(box,{y:6,opacity:0},{y:0,opacity:1,duration:.25});
+ }finally{
+  isBusy=false;
+  $("createPseudo").disabled=false;
+  $("reidentifyBtn").disabled=false;
+ }
+};
+
+// Visualisasi grafik dampak kebocoran menggunakan Chart.js
+let riskChart=null;
+try{
+ if(typeof Chart!=="undefined"){
+  const ctx=$("riskChart").getContext("2d");
+  riskChart=new Chart(ctx,{
+   type:"bar",
+   data:{
+    labels:["Eksposur Identitas Langsung","Risiko Pengaitan Ulang","Efektivitas Isolasi Data"],
+    datasets:[{
+     label:"Tingkat (%)",
+     data:[15,25,85],
+     backgroundColor:["#63d6a1","#ffca70","#55d6e8"],
+     borderRadius:8,
+     barThickness:24
+    }]
+   },
+   options:{
+    indexAxis:"y",
+    responsive:true,
+    maintainAspectRatio:false,
+    animation:{duration:500,easing:"easeOutQuart"},
+    scales:{
+     x:{min:0,max:100,grid:{color:"#1e2d44"},ticks:{color:"#9fb0c8",callback:v=>v+"%"}},
+     y:{grid:{display:false},ticks:{color:"#edf4ff",font:{weight:"600"}}}
+    },
+    plugins:{legend:{display:false}}
+   }
+  });
+ }
+}catch(err){
+ console.warn("Chart.js tidak tersedia:",err);
+}
+
+const risks={
+ dbA:{
+  cls:"good",
+  title:"1. Database A (Dataset Analisis) saja yang bocor",
+  detail:"Pihak tidak berwenang melihat kode samaran (ID-PESERTA-XXX) dan nilai, tetapi tidak langsung melihat nama atau NIM karena tabel penghubung terpisah di Database B.",
+  action:"Tetap evaluasi risiko identifikasi tidak langsung dari kombinasi atribut lain, dan perketat kontrol akses.",
+  metrics:[15,30,85],
+  colors:["#63d6a1","#ffca70","#55d6e8"]
+ },
+ dbB:{
+  cls:"bad",
+  title:"2. Database B (Tabel Penghubung) saja yang bocor",
+  detail:"Daftar pemetaan ID Samaran dengan Nama dan NIM terbuka. Meski nilai akademik tidak ada di Database B, daftar identitas peserta sudah terungkap.",
+  action:"Enkripsi Database B, terapkan kontrol akses ketat (least privilege), dan aktifkan audit log setiap kueri.",
+  metrics:[80,65,35],
+  colors:["#ff8585","#ffca70","#55d6e8"]
+ },
+ both:{
+  cls:"bad",
+  title:"3. Database A dan Database B bocor bersama",
+  detail:"Penyerang dapat menggabungkan ID Samaran pada Database A dengan identitas asli pada Database B. Perlindungan pseudonimisasi gagal total.",
+  action:"Pisahkan infrastruktur/kredensial kedua database, lakukan respons insiden, dan rotasi skema pseudonim.",
+  metrics:[100,100,5],
+  colors:["#ff8585","#ff8585","#ffca70"]
+ }
+};
+
+document.querySelectorAll("[data-risk]").forEach(btn=>btn.onclick=()=>{
+ document.querySelectorAll("[data-risk]").forEach(x=>x.classList.toggle("active",x===btn));
+ const r=risks[btn.dataset.risk],box=$("riskInfo");
+ box.style.display="block";
+ box.className="feedback "+r.cls;
+ box.innerHTML=`<b>${r.title}</b><p style="margin:6px 0">${r.detail}</p><p style="margin:0"><b>Langkah perlindungan:</b> ${r.action}</p>`;
+ if(riskChart){
+  riskChart.data.datasets[0].data=r.metrics;
+  riskChart.data.datasets[0].backgroundColor=r.colors;
+  riskChart.update();
+ }
+ if(typeof gsap!=="undefined") gsap.fromTo(box,{opacity:0,y:6},{opacity:1,y:0,duration:.25});
+});
+
+// =========================================================
+// 4. LOGIKA SKENARIO MISSION (5 SOAL)
+// =========================================================
+const missions=[
+ {q:"Dosen ingin menganalisis nilai mahasiswa tanpa menampilkan nama dan NIM di dataset analisis.",sample:"Andi Saputra | NIM 3312401001 | Nilai 87",opts:["Tetap gunakan nama dan NIM pada setiap baris","Ganti nama dan NIM dengan ID-PESERTA-001; simpan tabel penghubung secara terpisah","Hapus seluruh data nilai"],outputs:["Andi Saputra | NIM 3312401001 | Nilai 87","ID-PESERTA-001 | Nilai 87","Data nilai tidak tersedia"],a:1,e:"Tepat. Identitas langsung diganti kode samaran, sedangkan informasi penghubung disimpan terpisah dan dilindungi."},
+ {q:"Tim penelitian perlu menghubungkan hasil pengukuran berulang milik peserta yang sama, tetapi tidak perlu melihat nama peserta.",sample:"Nama: Siti Rahma | Hasil 1: 72 | Hasil 2: 80",opts:["Berikan kode pseudonim yang konsisten untuk peserta yang sama","Gunakan kode baru yang berbeda pada setiap hasil sehingga tidak dapat dipasangkan","Cantumkan nama lengkap pada semua hasil"],outputs:["ID-PESERTA-002 | Hasil 1: 72 | Hasil 2: 80","ID-001 | Hasil 1: 72; ID-009 | Hasil 2: 80","Siti Rahma | Hasil 1: 72 | Hasil 2: 80"],a:0,e:"Tepat. Kode yang konsisten memungkinkan catatan peserta yang sama dianalisis tanpa menampilkan identitas langsung."},
+ {q:"Dataset pseudonim akan dibagikan kepada tim analisis. Di folder yang sama terdapat file pemetaan ID ke nama dan NIM.",sample:"Dataset: ID-PESERTA-003 | Nilai 78. File lain: ID-PESERTA-003 → Budi Santoso.",opts:["Kirim kedua file bersama-sama","Pisahkan dan batasi akses ke file pemetaan; bagikan dataset sesuai kewenangan","Ubah warna teks pada file pemetaan"],outputs:["Penerima dapat mengaitkan ID dengan Budi Santoso","Dataset ID-PESERTA-003 | Nilai 78 (file pemetaan tidak dibagikan kepada tim analisis)","Identitas tetap terbaca pada file pemetaan"],a:1,e:"Tepat. Informasi tambahan yang memungkinkan identifikasi harus disimpan terpisah dan diberi perlindungan akses."},
+ {q:"Sebuah laporan menampilkan ID-PESERTA-004. Mahasiswa mengira data itu sudah anonim dan bebas dibagikan ke publik.",sample:"ID-PESERTA-004 | Program Studi: Informatika | Nilai: 95",opts:["Setuju, karena nama tidak ditampilkan","Periksa apakah identitas masih dapat diketahui dari informasi tambahan atau kombinasi data","Tambahkan NIM agar lebih jelas"],outputs:["ID masih dapat dikaitkan dengan seseorang jika ada informasi tambahan","Lakukan penilaian risiko identifikasi; pseudonim bukan otomatis anonim","ID-PESERTA-004 | NIM asli ditambahkan"],a:1,e:"Tepat. Pseudonimisasi mengurangi keterkaitan langsung, tetapi data masih dapat menjadi data pribadi jika seseorang dapat diidentifikasi kembali."},
+ {q:"Petugas administrasi perlu menghubungkan satu ID pseudonim dengan identitas mahasiswa untuk memperbaiki data yang keliru.",sample:"ID-PESERTA-005 | Nilai tercatat 67 | Perlu verifikasi identitas",opts:["Semua staf boleh membuka tabel penghubung","Akses tabel penghubung hanya diberikan kepada petugas berwenang sesuai kebutuhan dan prosedur","Bagikan tabel penghubung melalui grup umum"],outputs:["Tabel penghubung terbuka untuk semua staf","Petugas berwenang mengakses pemetaan sesuai otorisasi dan mencatat prosesnya","Tabel penghubung tersebar ke banyak pihak"],a:1,e:"Tepat. Akses terhadap informasi penghubung harus dibatasi berdasarkan kewenangan dan kebutuhan tugas."}
+];
+let mi=0,missionDone=new Set(),missionScore=0;
+
+function renderMission(){
+ const m=missions[mi];
+ $("missionArea").innerHTML=`<div class="question" id="missionCard"><b>Skenario ${mi+1} dari ${missions.length}</b><p>${m.q}</p><div style="background:#13243a;border:1px solid #35506e;border-radius:10px;padding:12px;margin:12px 0"><div class="small">CONTOH DATA</div><div style="font-weight:700;margin-top:5px">${m.sample}</div></div><p><b>Apa tindakan yang paling tepat?</b></p>${m.opts.map((o,i)=>`<label class="option"><input type="radio" name="mission" value="${i}"> ${o}</label>`).join("")}</div>`;
+ $("missionFeedback").style.display="none";
+ $("missionProgress").style.width=(missionDone.size/missions.length*100)+"%";
+ $("missionScore").textContent=missionScore;
+ if(typeof gsap!=="undefined") gsap.from("#missionCard",{y:12,opacity:0,duration:.35,ease:"power2.out"});
+}
+
+$("checkMission").onclick=()=>{
+ const sel=document.querySelector('input[name="mission"]:checked');
+ const fb=$("missionFeedback");
+ if(!sel){
+  fb.style.display="block";
+  fb.className="feedback";
+  fb.textContent="Pilih salah satu jawaban terlebih dahulu.";
+  return;
+ }
+ const m=missions[mi],choice=Number(sel.value),correct=choice===m.a;
+ if(!missionDone.has(mi)){
+  missionDone.add(mi);
+  if(correct) missionScore++;
+ }
+ fb.style.display="block";
+ fb.className="feedback "+(correct?"good":"bad");
+ fb.innerHTML=`<b>${correct?"Tepat!":"Belum tepat."}</b><p>${m.e}</p><div style="background:#0b1525;border:1px solid #354964;border-radius:9px;padding:11px;margin-top:9px"><div class="small">BENTUK DATA JIKA PILIHAN INI DITERAPKAN</div><div style="font:700 15px ui-monospace,Consolas,monospace;overflow-wrap:anywhere;margin-top:7px">${m.outputs[choice]}</div></div>`;
+ $("missionScore").textContent=missionScore;
+ $("missionProgress").style.width=(missionDone.size/missions.length*100)+"%";
+ if(typeof gsap!=="undefined"){
+  if(!correct) gsap.fromTo("#missionCard",{x:-8},{x:8,duration:.07,repeat:5,yoyo:true,clearProps:"x"});
+  else gsap.fromTo(fb,{scale:.97,opacity:0},{scale:1,opacity:1,duration:.25});
+ }
+ if(correct&&missionDone.size===missions.length&&missionScore===missions.length&&typeof confetti==="function"){
+  confetti({particleCount:70,spread:65,origin:{y:.65}});
+ }
+};
+$("nextMission").onclick=()=>{mi=(mi+1)%missions.length;renderMission();};
+renderMission();
+
+// =========================================================
+// 5. LOGIKA EVALUASI KUIS & CATATAN BELAJAR (TAB 05)
+// =========================================================
+const quiz=[
+ {q:"Apa tujuan utama pseudonimisasi?",o:["Menghapus semua data pribadi secara permanen","Mengganti identitas langsung dengan kode samaran dan memisahkan informasi penghubung","Menyamarkan tampilan layar saja","Mengubah data menjadi ciphertext"],a:1,e:"Pseudonimisasi mengganti identitas langsung dengan pseudonim; informasi tambahan untuk menghubungkan kembali harus dipisahkan dan dilindungi."},
+ {q:"Apa yang dimaksud informasi penghubung dalam pseudonimisasi?",o:["Informasi yang menghubungkan kode samaran dengan identitas asli","Password untuk masuk internet","Daftar nilai mahasiswa","Simbol masking"],a:0,e:"Informasi penghubung memungkinkan kode pseudonim dikaitkan kembali dengan identitas asli."},
+ {q:"Mengapa tabel penghubung harus disimpan terpisah?",o:["Agar ukuran file lebih kecil","Untuk mengurangi risiko identitas terungkap jika dataset analisis dibagikan","Agar data lebih mudah dipublikasikan","Supaya kode menjadi lebih panjang"],a:1,e:"Pemisahan dan pembatasan akses membantu mengurangi risiko pengungkapan identitas."},
+ {q:"Apakah data pseudonim otomatis menjadi anonim?",o:["Ya, selalu","Tidak, identitas masih mungkin diketahui dengan informasi tambahan","Ya, jika kodenya berupa angka","Tidak, karena semua data harus dihapus"],a:1,e:"Pseudonimisasi tidak otomatis menghilangkan kemungkinan identifikasi kembali."},
+ {q:"Apa perbedaan sederhana tokenisasi dan pseudonimisasi?",o:["Keduanya selalu identik","Tokenisasi menggunakan token dan mekanisme pemetaan token; pseudonimisasi menggunakan identitas samaran dengan informasi tambahan yang dipisahkan","Pseudonimisasi selalu memakai enkripsi","Tokenisasi hanya untuk nama orang"],a:1,e:"Keduanya dapat mengganti nilai asli, tetapi mekanisme dan pengelolaan pemetaannya dapat berbeda."}
+];
+$("quizArea").innerHTML=quiz.map((q,i)=>`<div class="question"><b>${i+1}. ${q.q}</b>${q.o.map((o,j)=>`<label class="option"><input type="radio" name="quiz${i}" value="${j}">${o}</label>`).join("")}<div class="feedback" id="qfb${i}"></div></div>`).join("");
+
+$("quizForm").onsubmit=e=>{
+ e.preventDefault();
+ let score=0;
+ quiz.forEach((q,i)=>{
+  const v=document.querySelector(`input[name="quiz${i}"]:checked`),fb=$("qfb"+i),ok=v&&Number(v.value)===q.a;
+  if(ok) score++;
+  fb.style.display="block";
+  fb.className="feedback "+(ok?"good":"bad");
+  fb.textContent=(ok?"Benar. ":"Belum tepat. ")+q.e;
+ });
+ const pct=Math.round(score/quiz.length*100);
+ const res=$("quizResult");
+ res.style.display="block";
+ res.className="feedback "+(pct>=80?"good":"bad");
+ res.textContent=`Nilai Anda ${score}/${quiz.length} (${pct}%). `+(pct>=80?"Pemahaman dasar sudah baik.":"Pelajari kembali konsep dan coba ulangi evaluasi.");
+ if(typeof gsap!=="undefined") gsap.fromTo(res,{y:8,opacity:0},{y:0,opacity:1,duration:.3});
+ if(pct>=80&&typeof confetti==="function") confetti({particleCount:85,spread:70,origin:{y:.6}});
+};
+
+$("saveReflection").onclick=()=>{
+ try{
+  localStorage.setItem("pseudonym_lab_reflection",$("reflection").value);
+  $("saveStatus").textContent="Catatan tersimpan pada browser/perangkat ini.";
+ }catch(e){
+  $("saveStatus").textContent="Penyimpanan lokal tidak tersedia.";
+ }
+};
+try{
+ $("reflection").value=localStorage.getItem("pseudonym_lab_reflection")||"";
+}catch(e){}
+
+// Navigasi tab dengan animasi GSAP
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");
+ const target=$(b.dataset.view);
+ target.classList.add("active");
+ if(typeof gsap!=="undefined") gsap.fromTo(target,{opacity:0,y:10},{opacity:1,y:0,duration:.3,ease:"power2.out"});
+ if(b.dataset.view==="praktik"&&riskChart) riskChart.update();
+ window.scrollTo({top:0,behavior:"smooth"});
+});
+</script>
+</body>
+</html>

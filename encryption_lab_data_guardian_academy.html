@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryption Lab — Data Guardian Academy</title>
+<!-- Library animasi mikro GSAP & efek selebrasi konfeti -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+:root{
+  --bg:#0b1220;
+  --panel:#121d30;
+  --panel2:#18263d;
+  --line:#2a3b56;
+  --text:#edf4ff;
+  --muted:#9fb0c8;
+  --cyan:#55d6e8;
+  --green:#63d6a1;
+  --amber:#ffca70;
+  --red:#ff8585;
+  --purple:#b9a2ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 15% 0%,#17314b 0,transparent 35%),
+    radial-gradient(circle at 85% 20%,#122842 0,transparent 30%),
+    var(--bg);
+  color:var(--text);
+  font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  overflow-x:hidden;
+}
+header{
+  position:relative;
+  padding:28px max(20px,calc((100% - 1160px)/2));
+  border-bottom:1px solid var(--line);
+  background:#0b1220dd;
+  overflow:hidden;
+}
+/* Garis pemindai animasi di bagian bawah header */
+header::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:-40%;
+  width:40%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),var(--green),transparent);
+  animation:scanline 5s linear infinite;
+}
+@keyframes scanline{
+  0%{left:-40%}
+  100%{left:100%}
+}
+.eyebrow{
+  color:var(--cyan);
+  font-weight:800;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.live-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+  animation:pulseDot 1.8s infinite;
+}
+@keyframes pulseDot{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.4;transform:scale(.8)}
+}
+h1{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:8px 0}
+header p{color:var(--muted);max-width:780px;margin:10px 0 0}
+main{max-width:1160px;margin:auto;padding:22px 18px 60px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 20px}
+.tab{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--muted);
+  padding:10px 15px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
+  transition:all .2s ease;
+}
+.tab:hover{border-color:#3d587d;color:var(--text);transform:translateY(-1px)}
+.tab.active{
+  background:#17384a;
+  color:var(--cyan);
+  border-color:#287487;
+  box-shadow:0 4px 14px rgba(85,214,232,.15);
+}
+.view{display:none}
+.view.active{display:block}
+.card{
+  background:linear-gradient(145deg,var(--panel),#101a2b);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 12px 30px #0002;
+}
+h2{margin:0 0 12px;font-size:22px}
+h3{margin:0 0 8px;font-size:17px}
+.muted{color:var(--muted)}
+.small{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+label{display:block;color:#c7d5e8;font-weight:700;font-size:13px;margin:12px 0 6px}
+input,select,textarea{
+  width:100%;
+  background:#0b1525;
+  border:1px solid #354964;
+  color:var(--text);
+  padding:11px 12px;
+  border-radius:10px;
+  font:inherit;
+  transition:border-color .2s;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--cyan)}
+button{
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  font:700 14px system-ui;
+  cursor:pointer;
+  background:var(--cyan);
+  color:#08202a;
+  transition:transform .15s,box-shadow .2s;
+}
+button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px rgba(85,214,232,.25)}
+button.secondary{background:#263851;color:var(--text);border:1px solid #3a506d}
+button.secondary:hover:not(:disabled){box-shadow:0 6px 16px rgba(0,0,0,.25)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.result{
+  background:#081321;
+  border:1px solid #263b55;
+  border-radius:12px;
+  padding:14px;
+  min-height:52px;
+  overflow-wrap:anywhere;
+  font:600 16px ui-monospace,Consolas,monospace;
+}
+.pill{
+  display:inline-block;
+  border-radius:99px;
+  padding:4px 9px;
+  background:#20364d;
+  color:var(--cyan);
+  font-size:12px;
+  font-weight:800;
+}
+.callout{
+  border-left:4px solid var(--amber);
+  padding:10px 13px;
+  background:#30281766;
+  border-radius:7px;
+  color:#f6dfb4;
+  margin-top:12px;
+}
+.good{color:var(--green);border-color:#2f6b53!important;background:#102922!important}
+.bad{color:var(--red);border-color:#6b3232!important;background:#2a1418!important}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th,.table td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.table th{color:var(--cyan)}
+.question{padding:15px;border:1px solid var(--line);border-radius:13px;margin:12px 0;background:#0c1728}
+.option{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  margin:9px 0;
+  font-weight:500;
+  color:var(--text);
+  cursor:pointer;
+  padding:6px 8px;
+  border-radius:8px;
+  transition:background .15s;
+}
+.option:hover{background:#13233b}
+.option input{width:auto;margin-top:5px}
+.feedback{
+  margin-top:10px;
+  padding:12px;
+  border-radius:9px;
+  display:none;
+  background:#0c1728;
+  border:1px solid var(--line);
+  white-space:pre-line;
+}
+.progress{height:9px;background:#26364c;border-radius:20px;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .4s ease}
+footer{text-align:center;color:var(--muted);padding:24px;border-top:1px solid var(--line);font-size:12px}
+
+/* Bagan Alur & Animasi Proses Kriptografi */
+.flowchart{max-width:760px;margin:18px auto;display:flex;flex-direction:column;align-items:center;gap:8px}
+.flowbox{
+  width:min(100%,520px);
+  background:#0c1728;
+  border:1px solid #3a5675;
+  border-radius:12px;
+  padding:13px 16px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  transition:transform .2s,box-shadow .2s;
+}
+.flowbox:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(85,214,232,.12)}
+.flowbox b{color:var(--cyan)}
+.flowbox span{font-size:14px}
+.flowarrow{
+  font-size:22px;
+  color:var(--cyan);
+  line-height:1;
+  animation:arrowPulse 1.5s infinite;
+}
+@keyframes arrowPulse{
+  0%,100%{opacity:.4;transform:translateY(-2px)}
+  50%{opacity:1;transform:translateY(3px)}
+}
+.flowbox.data{border-color:#3d8c78;box-shadow:0 0 15px rgba(99,214,161,.08)}
+.flowbox.data b{color:var(--green)}
+.flowbox.vault{border-color:#a27d3c;box-shadow:0 0 15px rgba(255,202,112,.08)}
+.flowbox.vault b{color:var(--amber)}
+.flowbox em{font-style:normal;color:var(--muted);font-size:12px}
+
+.dbarchitecture{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:15px}
+.dbcard{background:#0c1728;border:1px solid #3d8c78;border-radius:14px;padding:14px;min-width:0}
+.dbcard.sensitive{border-color:#a27d3c}
+.dbcard>b{display:block;margin-bottom:4px}
+.dbicon{font-size:26px;color:var(--cyan);margin-bottom:5px}
+.dbcard.sensitive .dbicon{color:var(--amber)}
+.dbcard .table{font-size:12px;table-layout:fixed;overflow-wrap:anywhere}
+.dbcard .table th,.dbcard .table td{padding:7px 5px;overflow-wrap:anywhere}
+
+/* Visualizer 4-Tahap Kriptografi Real-Time */
+.crypto-anim{
+  background:#081220;
+  border:1px solid #28405e;
+  border-radius:14px;
+  padding:14px;
+  margin-top:14px;
+  display:none;
+}
+.crypto-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+@media(max-width:760px){.crypto-steps,.dbarchitecture{grid-template-columns:1fr}}
+.cstep{background:#0e1b2f;border:1px solid #273b54;border-radius:10px;padding:10px;transition:all .25s ease}
+.cstep small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cstep b{display:block;font-size:13px;margin-top:3px;color:var(--text)}
+.cstep span{display:block;font:600 12px ui-monospace,Consolas,monospace;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+.cstep.active{border-color:var(--cyan);background:#12293e;box-shadow:0 0 16px rgba(85,214,232,.22);transform:translateY(-2px)}
+.cstep.active b{color:var(--cyan)}
+.cstep.done{border-color:#2f6b53;background:#0e241f}
+.cstep.done b{color:var(--green)}
+.cstep.error{border-color:#7d3438;background:#2a1216}
+.cstep.error b{color:var(--red)}
+.scramble-box{
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#060e19;
+  border:1px dashed #324c6b;
+  font:600 13px ui-monospace,Consolas,monospace;
+  color:var(--amber);
+  overflow-wrap:anywhere;
+}
+.row-new{animation:flashRow 1.2s ease}
+@keyframes flashRow{
+  0%{background:rgba(85,214,232,.28)}
+  100%{background:transparent}
+}
+.id-chip{
+  background:#14283d;
+  color:var(--cyan);
+  border:1px solid #2b5473;
+  padding:3px 7px;
+  border-radius:6px;
+  font:600 12px ui-monospace,Consolas,monospace;
+  cursor:pointer;
+}
+.id-chip:hover{background:#1b3854}
+</style>
+</head>
+<body>
+<header>
+ <div class="eyebrow"><span class="live-dot"></span>Data Guardian Academy · Praktikum Interaktif</div>
+ <h1>ENCRYPTION LAB</h1>
+ <p>Laboratorium pembelajaran enkripsi. Pelajari bagaimana plaintext diubah menjadi ciphertext, bagaimana kunci digunakan, serta praktik menyimpan dan mendekripsi data secara terkendali.</p>
+</header>
+
+<main>
+ <nav class="tabs" aria-label="Navigasi pembelajaran">
+  <button class="tab active" data-view="belajar">01 · Pahami konsep</button>
+  <button class="tab" data-view="contoh">02 · Lihat contoh</button>
+  <button class="tab" data-view="praktik">03 · Praktik langsung</button>
+  <button class="tab" data-view="mission">04 · Mission</button>
+  <button class="tab" data-view="evaluasi">05 · Evaluasi</button>
+ </nav>
+
+ <!-- TAB 01: PAHAMI KONSEP -->
+ <section class="view active" id="belajar">
+  <div class="card">
+   <span class="pill">TUJUAN PEMBELAJARAN</span>
+   <h2 style="margin-top:10px">Apa itu enkripsi?</h2>
+   <p class="muted"><b>Enkripsi</b> adalah proses mengubah informasi yang dapat dibaca (<i>plaintext</i>) menjadi bentuk tersandi (<i>ciphertext</i>) menggunakan algoritma dan kunci. Data dapat dibaca kembali melalui proses dekripsi dengan kunci yang sesuai.</p>
+   <div class="callout"><b>Gagasan utama:</b> tanpa kunci yang sesuai, ciphertext seharusnya tidak dapat dipahami sebagai data asli. Karena itu, kunci enkripsi harus dilindungi dengan baik.</div>
+  </div>
+
+  <div class="card">
+   <h2>Contoh sederhana</h2>
+   <div class="grid">
+    <div><label>Plaintext (data asli)</label><div class="result">Nilai ujian: 90</div></div>
+    <div><label>Ciphertext (data tersandi)</label><div class="result" style="color:var(--green)">U2FsdGVkX1... (ilustrasi)</div></div>
+   </div>
+   <p class="muted">Ciphertext hasil enkripsi modern tampak seperti rangkaian karakter acak. Contoh di atas hanya ilustrasi, bukan hasil enkripsi sebenarnya.</p>
+  </div>
+
+  <div class="card">
+   <h2>Komponen utama enkripsi</h2>
+   <table class="table">
+    <thead><tr><th>Komponen</th><th>Penjelasan</th></tr></thead>
+    <tbody>
+     <tr><td>Plaintext</td><td>Data asli yang dapat dibaca sebelum dienkripsi.</td></tr>
+     <tr><td>Algoritma</td><td>Metode matematis untuk melakukan enkripsi dan dekripsi.</td></tr>
+     <tr><td>Kunci</td><td>Nilai rahasia atau material kriptografi yang digunakan sesuai algoritma.</td></tr>
+     <tr><td>Ciphertext</td><td>Hasil enkripsi yang tidak terbaca seperti data asli.</td></tr>
+     <tr><td>Dekripsi</td><td>Proses mengubah ciphertext kembali menjadi plaintext menggunakan kunci yang sesuai.</td></tr>
+    </tbody>
+   </table>
+  </div>
+
+  <div class="card">
+   <h2>Enkripsi simetris dan asimetris</h2>
+   <table class="table">
+    <thead><tr><th>Jenis</th><th>Karakteristik</th><th>Contoh</th></tr></thead>
+    <tbody>
+     <tr><td>Simetris</td><td>Menggunakan kunci rahasia yang sama untuk enkripsi dan dekripsi. Umumnya efisien untuk data berukuran besar.</td><td>AES</td></tr>
+     <tr><td>Asimetris</td><td>Menggunakan pasangan kunci publik dan privat. Keduanya memiliki fungsi yang saling terkait.</td><td>RSA, ECC</td></tr>
+    </tbody>
+   </table>
+   <div class="callout">Praktik langsung pada aplikasi ini menggunakan <b>AES-GCM</b> dengan kunci yang diturunkan dari kata sandi. Ini merupakan demonstrasi enkripsi simetris terautentikasi.</div>
+  </div>
+ </section>
+
+ <!-- TAB 02: LIHAT CONTOH -->
+ <section class="view" id="contoh">
+  <div class="card">
+   <span class="pill">CONTOH KASUS</span>
+   <h2 style="margin-top:10px">Melindungi data nilai mahasiswa</h2>
+   <p class="muted">Sistem akademik menyimpan catatan nilai. Jika file penyimpanan disalin pihak yang tidak berwenang, enkripsi membantu menjaga agar isi data tidak langsung terbaca tanpa kunci.</p>
+   <table class="table">
+    <thead><tr><th>Tahap</th><th>Contoh</th></tr></thead>
+    <tbody>
+     <tr><td>Plaintext</td><td>Nama: Andi; Nilai: 90</td></tr>
+     <tr><td>Proses</td><td>Algoritma AES-GCM dan kunci yang sesuai</td></tr>
+     <tr><td>Ciphertext</td><td>Rangkaian data tersandi yang tidak menampilkan nama dan nilai secara langsung</td></tr>
+     <tr><td>Dekripsi</td><td>Pengguna berwenang memasukkan kunci yang benar untuk membaca kembali data</td></tr>
+    </tbody>
+   </table>
+   <p class="small">Nama dan nilai di atas merupakan data fiktif.</p>
+  </div>
+
+  <div class="card">
+   <h2>Bagan alur enkripsi dan dekripsi</h2>
+   <div class="flowchart">
+    <div class="flowbox"><b>1. Plaintext</b><span>Data asli yang akan dilindungi.</span></div>
+    <div class="flowarrow">↓</div>
+    <div class="flowbox"><b>2. Algoritma + kunci</b><span>Proses enkripsi menggunakan kunci kriptografi.</span></div>
+    <div class="flowarrow">↓</div>
+    <div class="flowbox data"><b>3. Ciphertext</b><span>Data tersandi disimpan atau dikirim.</span><em>Isi data tidak langsung terbaca tanpa kunci.</em></div>
+    <div class="flowarrow">↓</div>
+    <div class="flowbox"><b>4. Dekripsi dengan kunci sesuai</b><span>Pihak berwenang melakukan dekripsi dan verifikasi integritas.</span></div>
+    <div class="flowarrow">↓</div>
+    <div class="flowbox vault"><b>5. Plaintext kembali</b><span>Data asli dapat dibaca kembali secara utuh.</span></div>
+   </div>
+  </div>
+
+  <div class="card">
+   <h2>Gambaran penyimpanan data</h2>
+   <div class="dbarchitecture">
+    <div class="dbcard">
+     <div class="dbicon">▤</div><b>Database / penyimpanan</b>
+     <span class="small">Menyimpan ciphertext, salt, dan nonce/IV sesuai rancangan.</span>
+     <table class="table"><tbody><tr><th>Record ID</th><th>Isi</th></tr><tr><td>ENC-001</td><td>Ciphertext</td></tr><tr><td>ENC-002</td><td>Ciphertext</td></tr></tbody></table>
+    </div>
+    <div class="dbcard sensitive">
+     <div class="dbicon">🔑</div><b>Pengelolaan kunci</b>
+     <span class="small">Kunci harus dikelola dan dilindungi secara terpisah.</span>
+     <table class="table"><tbody><tr><th>Item</th><th>Praktik baik</th></tr><tr><td>Kunci</td><td>Akses terbatas</td></tr><tr><td>Rahasia</td><td>Jangan disimpan bersama ciphertext</td></tr></tbody></table>
+    </div>
+   </div>
+   <div class="callout">Dalam praktik produksi, pengelolaan kunci sebaiknya menggunakan layanan khusus seperti KMS/HSM. Aplikasi pembelajaran ini hanya menyimpan ciphertext di penyimpanan lokal browser; kata sandi tidak disimpan.</div>
+  </div>
+ </section>
+
+ <!-- TAB 03: PRAKTIK LANGSUNG -->
+ <section class="view" id="praktik">
+  <div class="card">
+   <span class="pill">PRAKTIK LANGSUNG</span>
+   <h2 style="margin-top:10px">Enkripsi data dan simpan ke database simulasi</h2>
+   <p class="muted">Masukkan data fiktif dan kata sandi. Aplikasi mengenkripsi data menggunakan AES-GCM, menganimasikan tahapan prosesnya secara langsung, lalu menyimpan ciphertext, salt, dan IV pada tabel simulasi.</p>
+   <label for="plainInput">Plaintext / data yang akan dienkripsi</label>
+   <textarea id="plainInput" rows="3" placeholder="Contoh: Nama: Andi&#10;Nilai: 90"></textarea>
+   <label for="passInput">Kata sandi untuk enkripsi</label>
+   <div class="grid" style="grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px">
+    <input id="passInput" type="password" placeholder="Buat kata sandi latihan" autocomplete="new-password">
+    <button type="button" class="secondary" id="togglePass" aria-pressed="false">Lihat</button>
+   </div>
+   <div class="actions">
+    <button id="encryptBtn">Enkripsi &amp; simpan</button>
+    <button class="secondary" id="resetBtn">Hapus semua data simulasi</button>
+   </div>
+
+   <!-- Visualizer 4-Tahap Proses Kriptografi Real-Time -->
+   <div id="cryptoAnimPanel" class="crypto-anim">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+     <span class="pill" id="animModeBadge">PROSES KRIPTOGRAFI</span>
+     <span class="small" id="animStatusText">Menunggu eksekusi...</span>
+    </div>
+    <div class="crypto-steps">
+     <div class="cstep" id="cstep1"><small>Tahap 1</small><b id="cstep1Title">Salt &amp; IV</b><span id="cstep1Val">—</span></div>
+     <div class="cstep" id="cstep2"><small>Tahap 2</small><b id="cstep2Title">PBKDF2 Key</b><span id="cstep2Val">—</span></div>
+     <div class="cstep" id="cstep3"><small>Tahap 3</small><b id="cstep3Title">AES-256-GCM</b><span id="cstep3Val">—</span></div>
+     <div class="cstep" id="cstep4"><small>Tahap 4</small><b id="cstep4Title">Penyimpanan</b><span id="cstep4Val">—</span></div>
+    </div>
+    <div class="scramble-box" id="scrambleStream">Stream payload: —</div>
+   </div>
+
+   <div id="encryptResult" class="feedback"></div>
+   <div class="callout">Gunakan data fiktif dan kata sandi latihan. Aplikasi ini untuk pembelajaran, bukan untuk menyimpan data rahasia atau menggantikan sistem keamanan produksi.</div>
+  </div>
+
+  <div class="card">
+   <h2>Database simulasi — Encrypted Records</h2>
+   <p class="muted">Setiap proses enkripsi yang berhasil menambahkan satu record. Data yang tersimpan berupa ciphertext, salt, dan IV; plaintext dan kata sandi tidak ditampilkan dalam tabel.</p>
+   <div style="overflow-x:auto">
+    <table class="table">
+     <thead><tr><th>ID (klik salin)</th><th>Ciphertext (ringkas)</th><th>Salt</th><th>IV</th><th>Waktu</th></tr></thead>
+     <tbody id="recordsBody"><tr><td colspan="5">Belum ada data tersimpan.</td></tr></tbody>
+    </table>
+   </div>
+   <p class="small" id="recordCount">Jumlah record tersimpan: 0</p>
+  </div>
+
+  <div class="card">
+   <h2>Dekripsi data dari database</h2>
+   <p class="muted">Pilih ID record yang tersimpan, lalu masukkan kata sandi yang digunakan saat enkripsi. Sistem mengambil ciphertext dari database simulasi dan mencoba mendekripsinya.</p>
+   <label for="recordIdInput">Masukkan ID record</label>
+   <input id="recordIdInput" placeholder="Contoh: ENC-MXXXXXXX" autocomplete="off">
+   <label for="decryptPass">Kata sandi untuk dekripsi</label>
+   <div class="grid" style="grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px">
+    <input id="decryptPass" type="password" placeholder="Masukkan kata sandi yang benar" autocomplete="current-password">
+    <button type="button" class="secondary" id="toggleDecryptPass" aria-pressed="false">Lihat</button>
+   </div>
+   <p class="small">ID record dapat diklik dari kolom ID pada tabel Encrypted Records di atas atau diisi otomatis dengan tombol di bawah.</p>
+   <div class="actions">
+    <button class="secondary" id="decryptBtn">Ambil dari database &amp; dekripsi</button>
+    <button type="button" class="secondary" id="useLatestId">Gunakan ID terakhir</button>
+   </div>
+   <div class="feedback" id="decryptResult"></div>
+  </div>
+ </section>
+
+ <!-- TAB 04: MISSION -->
+ <section class="view" id="mission">
+  <div class="card">
+   <span class="pill">MISSION · ENCRYPTION DECISION</span>
+   <h2 style="margin-top:10px">Pilih tindakan yang paling tepat</h2>
+   <p class="muted">Baca skenario, pilih jawaban, lalu periksa alasan dan dampaknya.</p>
+   <div class="progress"><span id="missionProgress"></span></div>
+   <p class="small" id="missionScore">Misi selesai: 0/5</p>
+   <div id="missionArea"></div>
+   <div class="actions">
+    <button id="checkMission">Periksa jawaban</button>
+    <button class="secondary" id="nextMission">Soal berikutnya</button>
+   </div>
+   <div id="missionFeedback" class="feedback"></div>
+  </div>
+ </section>
+
+ <!-- TAB 05: EVALUASI -->
+ <section class="view" id="evaluasi">
+  <div class="card">
+   <h2>Evaluasi pemahaman</h2>
+   <p class="muted">Pilih satu jawaban yang paling tepat untuk setiap pertanyaan.</p>
+   <div id="quizArea"></div>
+   <button id="submitQuiz">Kirim jawaban</button>
+   <div id="quizResult" class="feedback"></div>
+  </div>
+  <div class="card">
+   <h2>Catatan belajar</h2>
+   <textarea id="reflection" rows="4" placeholder="Tuliskan hal yang Anda pahami tentang plaintext, ciphertext, kunci, enkripsi, dan dekripsi."></textarea>
+   <div class="actions">
+    <button class="secondary" id="saveReflection">Simpan catatan</button>
+   </div>
+   <div id="reflectionResult" class="feedback"></div>
+  </div>
+ </section>
+</main>
+
+<footer>Data Guardian Academy · Praktikum Interaktif Dasar Keamanan Siber</footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+function escapeHTML(v){
+ return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+// Format waktu standar sistem YYYY-MM-DD HH:MM:SS (24 jam)
+function formatSystemTime(d=new Date()){
+ const pad=n=>String(n).padStart(2,"0");
+ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+// Navigasi tab dengan animasi GSAP
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");
+ const target=$(btn.dataset.view);
+ target.classList.add("active");
+ if(typeof gsap!=="undefined") gsap.fromTo(target,{opacity:0,y:10},{opacity:1,y:0,duration:.3,ease:"power2.out"});
+ window.scrollTo({top:0,behavior:"smooth"});
+}));
+
+// Penyimpanan Database Simulasi (mulai kosong 0 record)
+const STORE="encryptionLabRecords_v2";
+let records=[];
+try{
+ const saved=JSON.parse(localStorage.getItem(STORE)||"[]");
+ records=Array.isArray(saved)?saved:[];
+}catch(e){records=[];}
+
+const b64=bytes=>btoa(String.fromCharCode(...new Uint8Array(bytes)));
+const fromB64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const short=s=>s.length>32?s.slice(0,32)+"…":s;
+
+function show(el,msg,kind="good"){
+ el.style.display="block";
+ el.className="feedback "+kind;
+ el.textContent=msg;
+ if(typeof gsap!=="undefined"){
+  if(kind==="bad") gsap.fromTo(el,{x:-7},{x:7,duration:.07,repeat:5,yoyo:true,clearProps:"x"});
+  else gsap.fromTo(el,{opacity:0,y:5},{opacity:1,y:0,duration:.25});
+ }
+}
+
+function save(){
+ try{
+  localStorage.setItem(STORE,JSON.stringify(records));
+  return true;
+ }catch(e){
+  return false;
+ }
+}
+
+function render(highlightLast=false){
+ const body=$("recordsBody");
+ if(!records.length){
+  body.innerHTML='<tr><td colspan="5">Belum ada data tersimpan.</td></tr>';
+ }else{
+  body.innerHTML=records.map((r,idx)=>{
+   const isLast=highlightLast&&idx===records.length-1;
+   return `<tr class="${isLast?"row-new":""}"><td><button type="button" class="id-chip" data-copy-id="${escapeHTML(r.id)}" title="Klik untuk menyalin ke kolom dekripsi">${escapeHTML(r.id)}</button></td><td title="${escapeHTML(r.cipher)}">${escapeHTML(short(r.cipher))}</td><td>${escapeHTML(r.salt.slice(0,12))}…</td><td>${escapeHTML(r.iv.slice(0,12))}…</td><td>${escapeHTML(r.time)}</td></tr>`;
+  }).join("");
+  body.querySelectorAll("[data-copy-id]").forEach(chip=>{
+   chip.onclick=()=>{
+    $("recordIdInput").value=chip.dataset.copyId;
+    if(typeof gsap!=="undefined") gsap.fromTo("#recordIdInput",{scale:.98},{scale:1,duration:.2});
+   };
+  });
+ }
+ $("recordCount").textContent="Jumlah record tersimpan: "+records.length;
+}
+
+// Helper Animasi 4-Tahap Kriptografi
+function resetAnimSteps(modeLabel){
+ $("cryptoAnimPanel").style.display="block";
+ $("animModeBadge").textContent=modeLabel;
+ for(let i=1;i<=4;i++){
+  const el=$("cstep"+i);
+  el.className="cstep";
+  $("cstep"+i+"Val").textContent="—";
+ }
+}
+function setStepState(stepNum,state,title,val){
+ const el=$("cstep"+stepNum);
+ el.className="cstep "+state;
+ if(title) $("cstep"+stepNum+"Title").textContent=title;
+ if(val!==undefined) $("cstep"+stepNum+"Val").textContent=val;
+}
+function scrambleText(targetText,durationMs=420,finalColor="var(--cyan)"){
+ const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+ const box=$("scrambleStream");
+ box.style.color="var(--amber)";
+ return new Promise(resolve=>{
+  const start=performance.now();
+  const timer=setInterval(()=>{
+   const elapsed=performance.now()-start;
+   const len=Math.min(48,Math.max(16,targetText.length));
+   let out="";
+   for(let i=0;i<len;i++) out+=chars[Math.floor(Math.random()*chars.length)];
+   box.textContent="Stream: "+out;
+   if(elapsed>=durationMs){
+    clearInterval(timer);
+    box.style.color=finalColor;
+    box.textContent="Output: "+(targetText.length>64?targetText.slice(0,64)+"…":targetText);
+    resolve();
+   }
+  },40);
+ });
+}
+
+// Derivasi Kunci PBKDF2-SHA256 (150.000 iterasi) -> Kunci AES-GCM 256-bit
+async function deriveKey(password,salt){
+ const material=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey(
+  {name:"PBKDF2",salt,iterations:150000,hash:"SHA-256"},
+  material,
+  {name:"AES-GCM",length:256},
+  false,
+  ["encrypt","decrypt"]
+ );
+}
+
+let isBusy=false;
+
+// Proses Enkripsi + Animasi 4 Tahap
+$("encryptBtn").onclick=async()=>{
+ if(isBusy) return;
+ const plain=$("plainInput").value,pass=$("passInput").value;
+ if(!plain.trim()||!pass){
+  show($("encryptResult"),"Isi plaintext dan kata sandi terlebih dahulu.","bad");
+  return;
+ }
+ if(!window.crypto?.subtle){
+  show($("encryptResult"),"Fitur kriptografi browser (crypto.subtle) tidak tersedia. Jalankan file melalui HTTPS atau localhost pada browser modern.","bad");
+  return;
+ }
+
+ isBusy=true;
+ $("encryptBtn").disabled=true;
+ $("decryptBtn").disabled=true;
+ $("encryptResult").style.display="none";
+ resetAnimSteps("ANIMASI ENKRIPSI AES-256-GCM");
+
+ try{
+  $("animStatusText").textContent="Menghasilkan parameter acak...";
+  setStepState(1,"active","Salt & IV","Generating 16B + 12B...");
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  await wait(320);
+  setStepState(1,"done","Salt & IV",`Salt ${b64(salt).slice(0,8)}… · IV ${b64(iv).slice(0,8)}…`);
+
+  $("animStatusText").textContent="Menurunkan kunci simetris via PBKDF2...";
+  setStepState(2,"active","PBKDF2 Key","150,000 iterasi SHA-256");
+  const key=await deriveKey(pass,salt);
+  await wait(360);
+  setStepState(2,"done","PBKDF2 Key","Kunci 256-bit siap");
+
+  $("animStatusText").textContent="Mengenkripsi plaintext menjadi ciphertext...";
+  setStepState(3,"active","AES-256-GCM","Encrypting payload...");
+  const encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(plain));
+  const cipherB64=b64(encrypted);
+  await scrambleText(cipherB64,450,"var(--green)");
+  setStepState(3,"done","AES-256-GCM",`${cipherB64.slice(0,14)}…`);
+
+  $("animStatusText").textContent="Menyimpan ke database simulasi...";
+  setStepState(4,"active","Penyimpanan","Menulis record...");
+  const id="ENC-"+Date.now().toString(36).toUpperCase();
+  const row={id,cipher:cipherB64,salt:b64(salt),iv:b64(iv),time:formatSystemTime()};
+  records.push(row);
+  if(!save()){
+   records.pop();
+   setStepState(4,"error","Penyimpanan","Gagal menyimpan");
+   show($("encryptResult"),"Penyimpanan browser gagal. Periksa ruang penyimpanan atau pengaturan browser.","bad");
+  }else{
+   await wait(240);
+   setStepState(4,"done","Penyimpanan",`Tersimpan (${id})`);
+   $("animStatusText").textContent="Selesai — plaintext tidak disimpan ke tabel";
+   render(true);
+   $("recordIdInput").value=id;
+   $("plainInput").value="";
+   $("passInput").value="";
+   show($("encryptResult"),"Enkripsi berhasil. Record "+id+" telah disimpan. Tabel hanya menampilkan ciphertext, salt, dan IV.");
+  }
+ }catch(e){
+  setStepState(3,"error","AES-256-GCM","Error");
+  show($("encryptResult"),"Enkripsi gagal: "+e.message,"bad");
+ }finally{
+  isBusy=false;
+  $("encryptBtn").disabled=false;
+  $("decryptBtn").disabled=false;
+ }
+};
+
+$("useLatestId").onclick=()=>{
+ if(!records.length){
+  show($("decryptResult"),"Belum ada record di database simulasi.","bad");
+  return;
+ }
+ $("recordIdInput").value=records[records.length-1].id;
+ if(typeof gsap!=="undefined") gsap.fromTo("#recordIdInput",{scale:.98},{scale:1,duration:.2});
+};
+
+// Proses Dekripsi + Animasi Verifikasi Tag
+$("decryptBtn").onclick=async()=>{
+ if(isBusy) return;
+ const id=$("recordIdInput").value.trim(),pass=$("decryptPass").value;
+ if(!id||!pass){
+  show($("decryptResult"),"Pilih record dan masukkan kata sandi.","bad");
+  return;
+ }
+ if(!window.crypto?.subtle){
+  show($("decryptResult"),"Fitur kriptografi browser (crypto.subtle) tidak tersedia pada konteks ini.","bad");
+  return;
+ }
+ const row=records.find(r=>r.id===id);
+ if(!row){
+  show($("decryptResult"),"Record tidak ditemukan di database simulasi.","bad");
+  return;
+ }
+
+ isBusy=true;
+ $("encryptBtn").disabled=true;
+ $("decryptBtn").disabled=true;
+ $("decryptResult").style.display="none";
+ resetAnimSteps("ANIMASI DEKRIPSI & VERIFIKASI TAG");
+
+ try{
+  $("animStatusText").textContent="Mengambil ciphertext, salt & IV dari database...";
+  setStepState(1,"active","Ambil Record",`ID ${row.id}`);
+  await wait(300);
+  setStepState(1,"done","Ambil Record","Salt & IV ditemukan");
+
+  $("animStatusText").textContent="Merekonstruksi kunci dari kata sandi & salt...";
+  setStepState(2,"active","PBKDF2 Key","Deriving 256-bit key...");
+  const key=await deriveKey(pass,fromB64(row.salt));
+  await wait(340);
+  setStepState(2,"done","PBKDF2 Key","Kunci dihitung");
+
+  $("animStatusText").textContent="Memverifikasi GCM tag & mendekripsi...";
+  setStepState(3,"active","AES-GCM Auth","Checking integrity tag...");
+  const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:fromB64(row.iv)},key,fromB64(row.cipher));
+  const text=new TextDecoder().decode(plain);
+  await scrambleText(text,420,"var(--green)");
+  setStepState(3,"done","AES-GCM Auth","Tag valid");
+
+  setStepState(4,"done","Plaintext","Terbaca kembali");
+  $("animStatusText").textContent="Dekripsi berhasil";
+  show($("decryptResult"),"Dekripsi berhasil. Plaintext:\n"+text,"good");
+ }catch(e){
+  setStepState(3,"error","AES-GCM Auth","Verifikasi gagal");
+  setStepState(4,"error","Plaintext","Ditolak");
+  $("animStatusText").textContent="Dekripsi gagal — kunci salah atau ciphertext berubah";
+  $("scrambleStream").style.color="var(--red)";
+  $("scrambleStream").textContent="Stream: [AUTH_TAG_MISMATCH — AKSES DITOLAK]";
+  show($("decryptResult"),"Dekripsi gagal. Kata sandi salah atau data tersimpan telah berubah.","bad");
+ }finally{
+  isBusy=false;
+  $("encryptBtn").disabled=false;
+  $("decryptBtn").disabled=false;
+ }
+};
+
+$("resetBtn").addEventListener("click",()=>{
+ records=[];
+ try{
+  localStorage.removeItem(STORE);
+  localStorage.setItem(STORE,"[]");
+ }catch(e){
+  try{localStorage.removeItem(STORE);}catch(ignore){}
+ }
+ $("plainInput").value="";
+ $("passInput").value="";
+ $("decryptPass").value="";
+ $("recordIdInput").value="";
+ $("decryptResult").style.display="none";
+ $("cryptoAnimPanel").style.display="none";
+ render();
+ show($("encryptResult"),"Berhasil: seluruh data simulasi pada Encryption Lab ini telah dihapus dari penyimpanan browser.");
+});
+
+// Skenario Mission (5 Soal)
+const missions=[
+ {q:"File berisi data mahasiswa akan disimpan pada media yang berisiko hilang. Apa tindakan yang tepat?",o:["Simpan sebagai plaintext agar mudah dibaca","Enkripsi data dan lindungi kuncinya","Ubah nama file saja"],a:1,e:"Enkripsi membantu menjaga kerahasiaan isi file. Kunci juga harus dilindungi."},
+ {q:"Tim menyimpan ciphertext tetapi kehilangan kunci yang diperlukan. Apa dampak yang mungkin terjadi?",o:["Data otomatis kembali menjadi plaintext","Data dapat sulit atau tidak mungkin dipulihkan","Ciphertext berubah menjadi token"],a:1,e:"Kunci yang hilang dapat menyebabkan data tidak dapat didekripsi."},
+ {q:"Apa perbedaan utama plaintext dan ciphertext?",o:["Plaintext adalah data terbaca; ciphertext adalah hasil tersandi","Keduanya selalu sama","Ciphertext adalah kata sandi"],a:0,e:"Enkripsi mengubah plaintext menjadi ciphertext."},
+ {q:"Mengapa kunci tidak boleh disimpan sembarangan bersama data terenkripsi?",o:["Agar ukuran file lebih kecil","Agar pihak yang memperoleh file tidak sekaligus memperoleh kunci","Agar data menjadi anonim"],a:1,e:"Pemisahan dan pengendalian akses kunci mengurangi risiko penyalahgunaan."},
+ {q:"Apa fungsi dekripsi?",o:["Menghapus data","Mengubah ciphertext kembali menjadi plaintext dengan kunci yang sesuai","Mengganti plaintext dengan token"],a:1,e:"Dekripsi memulihkan data asli menggunakan kunci yang tepat."}
+];
+let mi=0,done=new Set(),missionCorrect=0;
+
+function renderMission(){
+ const m=missions[mi];
+ $("missionArea").innerHTML=`<div class="question" id="missionCard"><b>Mission ${mi+1}/5.</b> ${m.q}${m.o.map((v,i)=>`<label class="option"><input type="radio" name="mission" value="${i}"> ${v}</label>`).join("")}</div>`;
+ $("missionProgress").style.width=(done.size/5*100)+"%";
+ $("missionScore").textContent=`Misi selesai: ${done.size}/5`;
+ $("missionFeedback").style.display="none";
+ if(typeof gsap!=="undefined") gsap.from("#missionCard",{y:12,opacity:0,duration:.35,ease:"power2.out"});
+}
+
+$("checkMission").onclick=()=>{
+ const pick=document.querySelector('input[name="mission"]:checked');
+ if(!pick){
+  show($("missionFeedback"),"Pilih jawaban terlebih dahulu.","bad");
+  return;
+ }
+ const m=missions[mi],ok=+pick.value===m.a;
+ if(!done.has(mi)){
+  done.add(mi);
+  if(ok) missionCorrect++;
+ }
+ show($("missionFeedback"),(ok?"Tepat. ":"Belum tepat. ")+m.e,ok?"good":"bad");
+ $("missionProgress").style.width=(done.size/5*100)+"%";
+ $("missionScore").textContent=`Misi selesai: ${done.size}/5`;
+ if(!ok&&typeof gsap!=="undefined"){
+  gsap.fromTo("#missionCard",{x:-8},{x:8,duration:.07,repeat:5,yoyo:true,clearProps:"x"});
+ }
+ if(ok&&done.size===5&&missionCorrect===5&&typeof confetti==="function"){
+  confetti({particleCount:70,spread:65,origin:{y:.65}});
+ }
+};
+$("nextMission").onclick=()=>{mi=(mi+1)%5;renderMission();};
+
+// Evaluasi Kuis (5 Soal)
+const quiz=[
+ ["Apa yang dimaksud plaintext?",["Data asli yang dapat dibaca","Data hasil enkripsi","Kunci publik"],0],
+ ["Apa yang dihasilkan proses enkripsi?",["Plaintext","Ciphertext","Token Vault"],1],
+ ["Pada enkripsi simetris, enkripsi dan dekripsi menggunakan...",["Kunci yang sama","Selalu dua kunci publik","Tanpa kunci"],0],
+ ["Apa fungsi kunci dalam enkripsi?",["Mengatur tampilan layar","Digunakan dalam proses enkripsi/dekripsi","Menghapus ciphertext"],1],
+ ["Algoritma apa yang digunakan dalam praktik aplikasi ini?",["AES-GCM","ROT13","Base64 saja"],0]
+];
+$("quizArea").innerHTML=quiz.map((q,i)=>`<div class="question"><b>${i+1}. ${q[0]}</b>${q[1].map((v,j)=>`<label class="option"><input type="radio" name="quiz${i}" value="${j}"> ${v}</label>`).join("")}</div>`).join("");
+
+$("submitQuiz").onclick=()=>{
+ let score=0,answered=0;
+ quiz.forEach((q,i)=>{
+  const a=document.querySelector(`input[name="quiz${i}"]:checked`);
+  if(a){
+   answered++;
+   if(+a.value===q[2]) score++;
+  }
+ });
+ const pct=Math.round(score/quiz.length*100);
+ show(
+  $("quizResult"),
+  `Nilai: ${score}/${quiz.length} (${pct}%). Jawaban terisi: ${answered}/${quiz.length}.`+(answered<quiz.length?" Lengkapi semua soal untuk hasil evaluasi penuh.":""),
+  pct>=80?"good":"bad"
+ );
+ if(pct>=80&&typeof confetti==="function"){
+  confetti({particleCount:85,spread:70,origin:{y:.6}});
+ }
+};
+
+// Penyimpanan Catatan Belajar di localStorage
+const REFLECTION_KEY="encryption_lab_reflection";
+$("saveReflection").onclick=()=>{
+ const val=$("reflection").value.trim();
+ if(!val){
+  show($("reflectionResult"),"Tuliskan catatan terlebih dahulu.","bad");
+  return;
+ }
+ try{
+  localStorage.setItem(REFLECTION_KEY,$("reflection").value);
+  show($("reflectionResult"),"Catatan belajar tersimpan pada browser/perangkat ini.","good");
+ }catch(e){
+  show($("reflectionResult"),"Catatan belajar tersedia pada kolom ini, namun penyimpanan lokal browser tidak aktif.","good");
+ }
+};
+try{
+ $("reflection").value=localStorage.getItem(REFLECTION_KEY)||"";
+}catch(e){}
+
+// Toggle Lihat/Sembunyikan Kata Sandi
+function bindPasswordToggle(buttonId,inputId){
+ $(buttonId).addEventListener("click",()=>{
+  const input=$(inputId),showing=input.type==="password";
+  input.type=showing?"text":"password";
+  $(buttonId).textContent=showing?"Sembunyikan":"Lihat";
+  $(buttonId).setAttribute("aria-pressed",String(showing));
+ });
+}
+bindPasswordToggle("togglePass","passInput");
+bindPasswordToggle("toggleDecryptPass","decryptPass");
+
+render();
+renderMission();
+</script>
+</body>
+</html>
