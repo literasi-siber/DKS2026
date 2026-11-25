@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulasi Bagan Alur: Tanpa PAM (PuTTY) vs Menggunakan PAM (Onboarding & Rotasi)</title>
+<style>
+  :root {
+    --bg: #0b1322;
+    --card: #131e33;
+    --border: #283a5b;
+    --text: #e6eefc;
+    --muted: #93a6c8;
+    --red: #f45b69;
+    --red-bg: rgba(244, 91, 105, 0.12);
+    --green: #2ec4b6;
+    --green-bg: rgba(46, 196, 182, 0.12);
+    --blue: #4ea8de;
+    --amber: #f7b801;
+    --amber-bg: rgba(247, 184, 1, 0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px 14px 40px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  .header {
+    text-align: center;
+    max-width: 960px;
+    margin: 0 auto 18px;
+  }
+  .header h1 { font-size: 21px; margin-bottom: 6px; }
+  .header p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  .global-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .btn-global {
+    background: linear-gradient(135deg, #2b6cb0, #319795);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(49, 151, 149, 0.3);
+  }
+  .btn-global:hover { filter: brightness(1.1); }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 20px;
+    max-width: 1260px;
+    margin: 0 auto;
+  }
+  @media (max-width: 920px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .panel-header h2 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+  .badge.safe { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+
+  /* Flowchart Nodes */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+  }
+  .node {
+    width: 100%;
+    max-width: 380px;
+    background: #192742;
+    border: 2px solid #324870;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+    transition: all 0.35s ease;
+    position: relative;
+  }
+  .node-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .node-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .cred-tag {
+    display: inline-block;
+    margin-top: 7px;
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-family: Consolas, monospace;
+    transition: all 0.3s ease;
+  }
+  .cred-exposed { background: var(--red-bg); color: var(--red); border: 1px dashed var(--red); }
+  .cred-hidden { background: var(--green-bg); color: var(--green); border: 1px dashed var(--green); }
+  .cred-rotated { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber); }
+
+  /* Active Highlight States */
+  .node.active-red {
+    border-color: var(--red);
+    box-shadow: 0 0 18px rgba(244, 91, 105, 0.38);
+    transform: scale(1.02);
+  }
+  .node.active-green {
+    border-color: var(--green);
+    box-shadow: 0 0 18px rgba(46, 196, 182, 0.38);
+    transform: scale(1.02);
+  }
+  .node.active-amber {
+    border-color: var(--amber);
+    box-shadow: 0 0 18px rgba(247, 184, 1, 0.35);
+    transform: scale(1.02);
+  }
+
+  /* Connectors / Arrows */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--muted);
+    font-size: 11px;
+    min-height: 46px;
+    justify-content: center;
+    transition: color 0.3s;
+    width: 100%;
+  }
+  .arrow .line {
+    width: 2px;
+    height: 14px;
+    background: #3a507a;
+    transition: background 0.3s;
+  }
+  .arrow .label {
+    background: #0e1729;
+    border: 1px solid #2c3f63;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin: 2px 0;
+    text-align: center;
+    max-width: 380px;
+  }
+  .arrow.active-red { color: var(--red); font-weight: 600; }
+  .arrow.active-red .line { background: var(--red); }
+  .arrow.active-red .label { border-color: var(--red); background: #26141d; }
+
+  .arrow.active-green { color: var(--green); font-weight: 600; }
+  .arrow.active-green .line { background: var(--green); }
+  .arrow.active-green .label { border-color: var(--green); background: #102829; }
+
+  .arrow.active-amber { color: var(--amber); font-weight: 600; }
+  .arrow.active-amber .line { background: var(--amber); }
+  .arrow.active-amber .label { border-color: var(--amber); background: #2b230d; }
+
+  /* Vault Side Box inside PAM flow */
+  .pam-middle {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 460px;
+  }
+  @media (max-width: 480px) {
+    .pam-middle { flex-direction: column; align-items: center; }
+  }
+  .vault-box {
+    background: #142638;
+    border: 2px dashed #3b6998;
+    border-radius: 10px;
+    padding: 10px;
+    flex: 1;
+    min-width: 175px;
+    text-align: center;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.35s;
+  }
+  .vault-box.active-amber {
+    border-style: solid;
+    border-color: var(--amber);
+    box-shadow: 0 0 18px rgba(247, 184, 1, 0.35);
+    transform: scale(1.02);
+  }
+  .vault-box.active-green {
+    border-style: solid;
+    border-color: var(--green);
+    box-shadow: 0 0 18px rgba(46, 196, 182, 0.35);
+    transform: scale(1.02);
+  }
+
+  /* Step Indicator */
+  .step-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 14px;
+    padding: 6px 10px;
+    background: #0e1626;
+    border-radius: 7px;
+    border: 1px solid #223352;
+  }
+
+  /* Controls & Log */
+  .controls {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  button.ctrl {
+    flex: 1;
+    min-width: 110px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  button.ctrl:hover { opacity: 0.9; }
+  button.ctrl:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-green { background: var(--green); color: #06211e; }
+  .btn-step { background: #26466d; color: #e6eefc; border: 1px solid #3c699e !important; }
+  .btn-reset { background: #22304a; color: var(--text); flex: 0.5; min-width: 70px; }
+
+  .log-box {
+    margin-top: 10px;
+    background: #09101d;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    min-height: 98px;
+    line-height: 1.55;
+    color: #b7c7e2;
+  }
+
+  /* Floating Animated Packet */
+  .packet {
+    position: fixed;
+    z-index: 9999;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: Consolas, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    transition: left 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+                top 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.25s ease,
+                transform 0.25s ease;
+    white-space: nowrap;
+  }
+  .packet.red {
+    background: #3a1219;
+    color: #ff8fa3;
+    border: 1.5px solid var(--red);
+  }
+  .packet.green {
+    background: #0d3330;
+    color: #72efdd;
+    border: 1.5px solid var(--green);
+  }
+  .packet.amber {
+    background: #382b09;
+    color: #ffd166;
+    border: 1.5px solid var(--amber);
+  }
+  .packet.blue {
+    background: #102a45;
+    color: #90e0ef;
+    border: 1.5px solid var(--blue);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Perbandingan Alur Akses SSH: Tanpa PAM (PuTTY) vs Menggunakan PAM</h1>
+  <p>Visualisasi perpindahan kredensial asli, proses <b>Onboarding & Rotasi Password Otomatis</b> pada Vault PAM, serta isolasi sesi terminal.</p>
+</div>
+
+<div class="global-bar">
+  <button class="btn-global" onclick="runBothAuto()">⚡ Jalankan Kedua Simulasi Otomatis</button>
+</div>
+
+<div class="container">
+  <!-- PANEL 1: TANPA PAM (PuTTY) -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>🖥️ Tanpa PAM (PuTTY Langsung)</h2>
+      <span class="badge danger">Kredensial Statis & Terekspos</span>
+    </div>
+
+    <div class="flow">
+      <div class="node" id="p1-user">
+        <div class="node-title">👤 User / Administrator</div>
+        <div class="node-desc">Mengetahui & menyimpan password asli server</div>
+        <span class="cred-tag cred-exposed">User: root | Pass: DirectDemo!2026</span>
+      </div>
+
+      <div class="arrow" id="p1-arr1">
+        <div class="line"></div>
+        <div class="label">1. User mengetik user & password asli ke PuTTY</div>
+        <div class="line"></div>
+      </div>
+
+      <div class="node" id="p1-putty">
+        <div class="node-title">💻 Aplikasi PuTTY (Client)</div>
+        <div class="node-desc">Mengirim kredensial langsung ke jaringan tanpa perantara</div>
+      </div>
+
+      <div class="arrow" id="p1-arr2">
+        <div class="line"></div>
+        <div class="label">2. Koneksi SSH langsung (User: root | Pass asli)</div>
+        <div class="line"></div>
+      </div>
+
+      <div class="node" id="p1-target">
+        <div class="node-title">🗄️ Server Target (192.168.10.20)</div>
+        <div class="node-desc">Menerima login langsung; password statis tidak pernah dirotasi</div>
+        <span class="cred-tag cred-exposed" style="font-size:10px;">Auth DB Server: root / DirectDemo!2026</span>
+      </div>
+    </div>
+
+    <div class="step-bar">
+      <span>Progres Langkah:</span>
+      <strong id="p1-step-txt">0 / 3 Langkah</strong>
+    </div>
+    <div class="log-box" id="p1-log">Status: Pilih <b>Otomatis</b> atau <b>Langkah Berikutnya</b> untuk memulai simulasi PuTTY.</div>
+    <div class="controls">
+      <button class="ctrl btn-red" id="p1-auto" onclick="runPuttyAuto()">▶ Otomatis</button>
+      <button class="ctrl btn-step" id="p1-next" onclick="nextPuttyStep()">⏭ Langkah Berikutnya</button>
+      <button class="ctrl btn-reset" onclick="resetPutty()">Reset</button>
+    </div>
+  </div>
+
+  <!-- PANEL 2: MENGGUNAKAN PAM -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>🔐 Menggunakan PAM (CyberVault)</h2>
+      <span class="badge safe">Onboarding, Rotasi & Isolasi Sesi</span>
+    </div>
+
+    <div class="flow">
+      <div class="node" id="p2-user">
+        <div class="node-title">👤 User (operator.demo)</div>
+        <div class="node-desc">Login pakai akun pribadi; <b>tidak tahu</b> password server</div>
+        <span class="cred-tag cred-hidden">Pass Server: [TIDAK DIKETAHUI USER]</span>
+      </div>
+
+      <div class="arrow" id="p2-arr1">
+        <div class="line"></div>
+        <div class="label" id="p2-arr1-lbl">1. User login ke PAM & meminta sesi SSH (Approval)</div>
+        <div class="line"></div>
+      </div>
+
+      <div class="pam-middle">
+        <div class="node" id="p2-pam" style="flex:1.15;">
+          <div class="node-title">🛡️ CyberVault PAM</div>
+          <div class="node-desc">Proxy SSH, Credential Injector & Audit Recorder</div>
+        </div>
+        <div class="vault-box" id="p2-vault">
+          <strong>🗄️ Credential Vault</strong>
+          <span id="vault-status-lbl" style="color:var(--muted);margin-top:3px;">Awal: DirectDemo!2026</span>
+          <span class="cred-tag cred-hidden" id="vault-pass-badge" style="font-size:10px;">Status: Menunggu Onboarding</span>
+        </div>
+      </div>
+
+      <div class="arrow" id="p2-arr2">
+        <div class="line"></div>
+        <div class="label" id="p2-arr2-lbl">2. PAM menyuntikkan User: root & Pass asli dari Vault</div>
+        <div class="line"></div>
+      </div>
+
+      <div class="node" id="p2-target">
+        <div class="node-title">🗄️ Server Target (192.168.10.20)</div>
+        <div class="node-desc">Hanya menerima SSH dari IP PAM (PuTTY langsung diblokir)</div>
+        <span class="cred-tag cred-hidden" id="target-pass-badge" style="font-size:10px;">Auth DB Server: DirectDemo!2026 (Awal)</span>
+      </div>
+    </div>
+
+    <div class="step-bar">
+      <span>Progres Langkah:</span>
+      <strong id="p2-step-txt">0 / 5 Langkah</strong>
+    </div>
+    <div class="log-box" id="p2-log">Status: Pilih <b>Otomatis</b> atau <b>Langkah Berikutnya</b> untuk melihat fase Onboarding, Rotasi Password & Sesi PAM.</div>
+    <div class="controls">
+      <button class="ctrl btn-green" id="p2-auto" onclick="runPamAuto()">▶ Otomatis</button>
+      <button class="ctrl btn-step" id="p2-next" onclick="nextPamStep()">⏭ Langkah Berikutnya</button>
+      <button class="ctrl btn-reset" onclick="resetPam()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function animatePacket(fromId, toId, text, colorClass = 'red', duration = 850) {
+    return new Promise(resolve => {
+      const fromEl = document.getElementById(fromId);
+      const toEl = document.getElementById(toId);
+      if (!fromEl || !toEl) return resolve();
+
+      const r1 = fromEl.getBoundingClientRect();
+      const r2 = toEl.getBoundingClientRect();
+
+      const pkt = document.createElement('div');
+      pkt.className = `packet ${colorClass}`;
+      pkt.textContent = text;
+      pkt.style.left = (r1.left + r1.width / 2) + 'px';
+      pkt.style.top = (r1.top + r1.height / 2) + 'px';
+      document.body.appendChild(pkt);
+
+      requestAnimationFrame(() => {
+        pkt.style.opacity = '1';
+        pkt.style.transform = 'translate(-50%, -50%) scale(1)';
+        requestAnimationFrame(() => {
+          pkt.style.left = (r2.left + r2.width / 2) + 'px';
+          pkt.style.top = (r2.top + r2.height / 2) + 'px';
+        });
+      });
+
+      setTimeout(() => {
+        pkt.style.opacity = '0';
+        pkt.style.transform = 'translate(-50%, -50%) scale(0.85)';
+        setTimeout(() => {
+          pkt.remove();
+          resolve();
+        }, 240);
+      }, duration);
+    });
+  }
+
+  // ================= PANEL 1: PuTTY (3 Langkah) =================
+  let p1Step = 0;
+  let p1Busy = false;
+
+  function setP1Buttons(disabled) {
+    document.getElementById('p1-auto').disabled = disabled;
+    document.getElementById('p1-next').disabled = disabled;
+  }
+
+  function resetPutty() {
+    p1Step = 0;
+    p1Busy = false;
+    setP1Buttons(false);
+    ['p1-user', 'p1-arr1', 'p1-putty', 'p1-arr2', 'p1-target'].forEach(id => {
+      document.getElementById(id).classList.remove('active-red');
+    });
+    document.getElementById('p1-step-txt').textContent = '0 / 3 Langkah';
+    document.getElementById('p1-log').innerHTML = 'Status: Pilih <b>Otomatis</b> atau <b>Langkah Berikutnya</b> untuk memulai simulasi PuTTY.';
+  }
+
+  async function nextPuttyStep() {
+    if (p1Busy) return;
+    if (p1Step >= 3) resetPutty();
+    p1Busy = true;
+    setP1Buttons(true);
+    p1Step++;
+    document.getElementById('p1-step-txt').textContent = `${p1Step} / 3 Langkah`;
+    const log = document.getElementById('p1-log');
+
+    if (p1Step === 1) {
+      document.getElementById('p1-user').classList.add('active-red');
+      log.innerHTML = '<b>[1/3] Persiapan Kredensial:</b> User membuka catatan pribadi berisi akun asli server: <code>root / DirectDemo!2026</code>.';
+      await sleep(300);
+    } else if (p1Step === 2) {
+      document.getElementById('p1-arr1').classList.add('active-red');
+      await animatePacket('p1-user', 'p1-putty', '🔑 root + DirectDemo!2026', 'red', 850);
+      document.getElementById('p1-putty').classList.add('active-red');
+      log.innerHTML = '<b>[2/3] Input ke Client:</b> User mengetikkan username dan password asli secara manual ke aplikasi PuTTY.';
+    } else if (p1Step === 3) {
+      document.getElementById('p1-arr2').classList.add('active-red');
+      await animatePacket('p1-putty', 'p1-target', '📡 SSH Auth: root / DirectDemo!2026', 'red', 950);
+      document.getElementById('p1-target').classList.add('active-red');
+      log.innerHTML = '<b>[3/3] Terhubung Langsung:</b> Server memverifikasi password asli dan membuka terminal. <span style="color:#f45b69"><b>Risiko:</b> Password statis diketahui user & tidak ada rekaman audit sesi.</span>';
+    }
+
+    p1Busy = false;
+    setP1Buttons(false);
+  }
+
+  async function runPuttyAuto() {
+    if (p1Busy) return;
+    resetPutty();
+    for (let i = 0; i < 3; i++) {
+      await nextPuttyStep();
+      if (i < 2) await sleep(650);
+    }
+  }
+
+  // ================= PANEL 2: PAM (5 Langkah) =================
+  let p2Step = 0;
+  let p2Busy = false;
+
+  function setP2Buttons(disabled) {
+    document.getElementById('p2-auto').disabled = disabled;
+    document.getElementById('p2-next').disabled = disabled;
+  }
+
+  function resetPam() {
+    p2Step = 0;
+    p2Busy = false;
+    setP2Buttons(false);
+    ['p2-user', 'p2-arr1', 'p2-pam', 'p2-vault', 'p2-arr2', 'p2-target'].forEach(id => {
+      document.getElementById(id).classList.remove('active-green', 'active-amber');
+    });
+    document.getElementById('p2-step-txt').textContent = '0 / 5 Langkah';
+    document.getElementById('vault-status-lbl').textContent = 'Awal: DirectDemo!2026';
+    const vBadge = document.getElementById('vault-pass-badge');
+    vBadge.className = 'cred-tag cred-hidden';
+    vBadge.textContent = 'Status: Menunggu Onboarding';
+    const tBadge = document.getElementById('target-pass-badge');
+    tBadge.className = 'cred-tag cred-hidden';
+    tBadge.textContent = 'Auth DB Server: DirectDemo!2026 (Awal)';
+    document.getElementById('p2-arr1-lbl').textContent = '1. User login ke PAM & meminta sesi SSH (Approval)';
+    document.getElementById('p2-arr2-lbl').textContent = '2. PAM menyuntikkan User: root & Pass asli dari Vault';
+    document.getElementById('p2-log').innerHTML = 'Status: Pilih <b>Otomatis</b> atau <b>Langkah Berikutnya</b> untuk melihat fase Onboarding, Rotasi Password & Sesi PAM.';
+  }
+
+  async function nextPamStep() {
+    if (p2Busy) return;
+    if (p2Step >= 5) resetPam();
+    p2Busy = true;
+    setP2Buttons(true);
+    p2Step++;
+    document.getElementById('p2-step-txt').textContent = `${p2Step} / 5 Langkah`;
+    const log = document.getElementById('p2-log');
+
+    if (p2Step === 1) {
+      document.getElementById('p2-pam').classList.add('active-amber');
+      document.getElementById('p2-vault').classList.add('active-amber');
+      document.getElementById('p2-arr2').classList.add('active-amber');
+      document.getElementById('p2-arr2-lbl').textContent = 'Onboarding: PAM merotasi DirectDemo!2026 → x9#Kp2$vL8@q...';
+      log.innerHTML = '<b>[1/5] Onboarding & Rotasi Otomatis:</b> Saat server didaftarkan ke PAM, Vault mengambil alih password lama (<code>DirectDemo!2026</code>) lalu <b>langsung merotasinya</b> menjadi password acak 24 karakter!';
+      await animatePacket('p2-vault', 'p2-target', '🔄 Rotate Pass: x9#Kp2$vL8@q...', 'amber', 950);
+      document.getElementById('vault-status-lbl').textContent = 'Rotated (24-char Random):';
+      const vBadge = document.getElementById('vault-pass-badge');
+      vBadge.className = 'cred-tag cred-rotated';
+      vBadge.textContent = 'root | x9#Kp2$vL8@q... (Masked)';
+      const tBadge = document.getElementById('target-pass-badge');
+      tBadge.className = 'cred-tag cred-rotated';
+      tBadge.textContent = 'Auth DB Server: x9#Kp2$vL8@q... (Baru)';
+    } else if (p2Step === 2) {
+      document.getElementById('p2-pam').classList.remove('active-amber');
+      document.getElementById('p2-vault').classList.remove('active-amber');
+      document.getElementById('p2-arr2').classList.remove('active-amber');
+      document.getElementById('p2-arr2-lbl').textContent = '2. PAM menyuntikkan User: root & Pass asli dari Vault';
+
+      document.getElementById('p2-user').classList.add('active-green');
+      document.getElementById('p2-arr1').classList.add('active-green');
+      log.innerHTML = '<b>[2/5] Permintaan Akses User:</b> <code>operator.demo</code> login ke portal PAM dan mengajukan sesi SSH. User <b>sama sekali tidak tahu</b> password baru di server.';
+      await animatePacket('p2-user', 'p2-pam', '🎫 Sesi User: operator.demo (Approved)', 'green', 850);
+      document.getElementById('p2-pam').classList.add('active-green');
+    } else if (p2Step === 3) {
+      document.getElementById('p2-vault').classList.add('active-green');
+      log.innerHTML = '<b>[3/5] Pengambilan Secret Internal:</b> Karena Access Request disetujui, mesin PAM mengambil kredensial asli (<code>root | x9#Kp2$vL8@q...</code>) secara internal dari Credential Vault.';
+      await animatePacket('p2-vault', 'p2-pam', '🔐 Secret Internal: root + x9#Kp2$vL8@q...', 'amber', 850);
+    } else if (p2Step === 4) {
+      document.getElementById('p2-arr2').classList.add('active-green');
+      log.innerHTML = '<b>[4/5] Credential Injection ke Target:</b> Mesin PAM mengirim username & password asli dari Vault menuju Server Target via SSH terenkripsi.';
+      await animatePacket('p2-pam', 'p2-target', '🔑 SSH Auth (dari PAM): root + x9#Kp2$vL8@q...', 'amber', 950);
+      document.getElementById('p2-target').classList.add('active-green');
+    } else if (p2Step === 5) {
+      document.getElementById('p2-arr1-lbl').textContent = '3. PAM meneruskan layar terminal saja ke User (Audit Aktif)';
+      log.innerHTML = '<b>[5/5] Isolasi Sesi & Audit:</b> Server Target menerima autentikasi PAM. PAM hanya meneruskan <b>tampilan layar terminal</b> ke User sementara password tetap terisolasi dan seluruh perintah direkam.';
+      await animatePacket('p2-target', 'p2-pam', '🖥️ SSH Session Stream', 'blue', 700);
+      await animatePacket('p2-pam', 'p2-user', '🖥️ Layar Terminal (Tanpa Password)', 'blue', 750);
+    }
+
+    p2Busy = false;
+    setP2Buttons(false);
+  }
+
+  async function runPamAuto() {
+    if (p2Busy) return;
+    resetPam();
+    for (let i = 0; i < 5; i++) {
+      await nextPamStep();
+      if (i < 4) await sleep(700);
+    }
+  }
+
+  async function runBothAuto() {
+    if (p1Busy || p2Busy) return;
+    runPuttyAuto();
+    runPamAuto();
+  }
+</script>
+</body>
+</html>

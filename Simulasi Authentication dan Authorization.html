@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybersecurity Learning Lab | Authentication & Authorization</title>
+<style>
+:root{--navy:#101b35;--navy2:#172747;--blue:#356df3;--cyan:#35c5d8;--bg:#f3f6fb;--card:#fff;--text:#172033;--muted:#68758b;--line:#e4eaf3;--green:#14845d;--red:#c23b4b;--amber:#a96a0b;--shadow:0 12px 32px rgba(18,38,74,.08)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text)}
+header{background:linear-gradient(120deg,var(--navy),#203e70);color:white;padding:26px max(22px,calc((100% - 1180px)/2));}
+.topline{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:grid;place-items:center;font-size:22px}
+h1{font-size:clamp(21px,3vw,30px);margin:0 0 5px}header p{margin:0;color:#c9d6ec;font-size:14px}
+.wrap{max-width:1180px;margin:24px auto;padding:0 20px}.notice{background:#eaf2ff;border:1px solid #cfe0ff;color:#254b86;padding:13px 16px;border-radius:12px;font-size:13px;margin-bottom:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--line);background:#fff;padding:10px 15px;border-radius:10px;color:#4b5870;font-weight:650;cursor:pointer}.tab.active{background:var(--navy2);border-color:var(--navy2);color:white}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}.card h2{font-size:18px;margin:0 0 6px}.card h3{font-size:15px;margin:0 0 10px}.sub{color:var(--muted);font-size:13px;line-height:1.55;margin:0 0 16px}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px;color:#34415a}input,select{width:100%;padding:11px 12px;border:1px solid #d8e0ec;border-radius:9px;font-size:14px;background:#fff;color:var(--text)}input:focus,select:focus{outline:3px solid #dce8ff;border-color:#7da5ff}
+button{border:0;border-radius:9px;padding:11px 15px;background:var(--blue);color:white;font-weight:700;cursor:pointer;font-size:13px}button:hover{filter:brightness(.96)}button.secondary{background:#eaf0fa;color:#29436e}button.dark{background:var(--navy2)}button.danger{background:#fff0f1;color:var(--red);border:1px solid #ffd4d8}button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.status{padding:11px 12px;border-radius:9px;background:#f1f4f8;color:#5c687d;font-size:13px;margin-top:13px;line-height:1.5}.status.success{background:#e9f8f1;color:#126b4d}.status.error{background:#fff0f1;color:#a62e3e}.status.warn{background:#fff7e8;color:#8a590d}
+.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#edf2fa;color:#43536d;font-size:11px;font-weight:750}.pill.green{background:#e6f7ef;color:#13704e}.pill.red{background:#ffedef;color:#ad3341}
+.account-list{display:grid;gap:8px}.account{padding:10px 12px;border:1px solid var(--line);border-radius:10px;display:flex;justify-content:space-between;gap:10px;font-size:13px}.account strong{display:block;margin-bottom:3px}.small{font-size:12px;color:var(--muted)}.otp{font-size:30px;font-weight:800;letter-spacing:8px;text-align:center;padding:14px;background:#f4f7fc;border:1px dashed #b8c8e0;border-radius:12px;margin:12px 0;color:#18335f}
+.phone{max-width:390px;margin:10px auto;border:8px solid #1b263a;border-radius:28px;background:#f4f7f8;overflow:hidden;min-height:420px}.phonebar{background:#075e54;color:#fff;padding:15px}.phonebar strong{display:block}.chatbody{padding:18px 13px;min-height:300px;background:#e8e3d9}.bubble{background:#fff;border-radius:4px 13px 13px 13px;padding:12px;max-width:90%;font-size:13px;line-height:1.5;box-shadow:0 1px 2px #0001}.bubble .code{font-size:23px;letter-spacing:5px;font-weight:800;color:#075e54;display:block;margin:7px 0}
+.authapp{max-width:390px;margin:10px auto;border:1px solid var(--line);border-radius:16px;overflow:hidden}.authhead{padding:14px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.authicon{width:35px;height:35px;background:#e9f0ff;border-radius:50%;display:grid;place-items:center;color:#285ac6;font-weight:800}.authbody{padding:17px;background:#f8faff}.totpcode{font-size:32px;font-weight:800;letter-spacing:7px;color:#253b68;text-align:center;margin:8px 0}.timer{height:6px;background:#e1e8f3;border-radius:9px;overflow:hidden}.timer>div{height:100%;background:#356df3;width:100%;transition:width .2s linear}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}th{color:#5d6b82;background:#f7f9fc}
+footer{text-align:center;color:#8190a5;font-size:12px;padding:25px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.wrap{padding:0 13px}.card{padding:16px}.tabs{display:grid;grid-template-columns:1fr 1fr}.tab{padding:10px 8px;font-size:12px}}
+</style>
+</head>
+<body>
+<header><div class="topline"><div class="logo">🛡️</div><div><h1>Cybersecurity Learning Lab</h1><p>Laboratorium Pembelajaran Authentication &amp; Authorization</p></div></div></header>
+<main class="wrap">
+<div class="notice"><strong>Mode pembelajaran:</strong> aplikasi ini berjalan secara lokal di browser. WhatsApp OTP merupakan simulasi, bukan pengiriman pesan sungguhan. Akun dan kata sandi di bawah hanya untuk praktikum.</div>
+<div class="tabs">
+<button class="tab active" data-tab="auth">1. Authentication</button>
+<button class="tab" data-tab="authz">2. Authorization</button>
+<button class="tab" data-tab="wa">3. WhatsApp OTP</button>
+<button class="tab" data-tab="totp">4. Google Authenticator</button>
+</div>
+
+<section id="auth" class="panel active">
+<div class="grid">
+<div class="card">
+<h2>Simulasi Login</h2><p class="sub">Authentication adalah proses memverifikasi bahwa pengguna benar-benar merupakan pihak yang diklaim.</p>
+<label for="username">Username</label><input id="username" placeholder="Contoh: dosen1" autocomplete="off">
+<label for="password">Password</label><input id="password" type="password" placeholder="Masukkan password demo">
+<div class="actions"><button id="loginBtn">Login</button><button class="secondary" id="logoutBtn">Logout</button></div>
+<div id="loginStatus" class="status">Belum ada pengguna yang login.</div>
+</div>
+<div class="card">
+<h2>Akun Demo</h2><p class="sub">Gunakan akun berikut untuk mencoba proses authentication dan pengujian hak akses.</p>
+<div class="account-list">
+<div class="account"><div><strong>admin</strong><span class="small">Administrator</span></div><span class="pill">Belajar123!</span></div>
+<div class="account"><div><strong>dosen1</strong><span class="small">Dosen</span></div><span class="pill">Belajar123!</span></div>
+<div class="account"><div><strong>mhs1</strong><span class="small">Mahasiswa</span></div><span class="pill">Belajar123!</span></div>
+<div class="account"><div><strong>kaprodi</strong><span class="small">Ketua Program Studi</span></div><span class="pill">Belajar123!</span></div>
+</div>
+<div class="status warn">Catatan: kredensial tersimpan di kode HTML untuk demonstrasi. Jangan gunakan pola ini untuk aplikasi nyata.</div>
+</div>
+</div>
+</section>
+
+<section id="authz" class="panel">
+<div class="grid">
+<div class="card">
+<h2>Uji Authorization</h2><p class="sub">Authorization menentukan tindakan atau sumber daya yang boleh diakses pengguna setelah identitasnya berhasil diverifikasi.</p>
+<div id="sessionInfo" class="status">Silakan login pada tab Authentication terlebih dahulu.</div>
+<label for="resource">Pilih sumber daya</label>
+<select id="resource"><option value="dashboard">Dashboard umum</option><option value="manage">Pengelolaan akun</option><option value="grades">Input nilai perkuliahan</option><option value="ownGrade">Melihat nilai pribadi</option><option value="reports">Laporan program studi</option></select>
+<div class="actions"><button id="checkAccess">Periksa Hak Akses</button></div>
+<div id="accessStatus" class="status">Hasil pemeriksaan akan ditampilkan di sini.</div>
+</div>
+<div class="card">
+<h2>Matriks Hak Akses Demo</h2><p class="sub">Aturan sederhana berbasis peran (Role-Based Access Control/ RBAC) untuk membantu memahami authorization.</p>
+<table><thead><tr><th>Peran</th><th>Hak akses contoh</th></tr></thead><tbody>
+<tr><td>Administrator</td><td>Dashboard, pengelolaan akun</td></tr>
+<tr><td>Dosen</td><td>Dashboard, input nilai</td></tr>
+<tr><td>Mahasiswa</td><td>Dashboard, melihat nilai pribadi</td></tr>
+<tr><td>Kaprodi</td><td>Dashboard, laporan program studi</td></tr>
+</tbody></table>
+<div class="status warn">Matriks ini adalah aturan praktikum sederhana, bukan rancangan kontrol akses untuk sistem akademik produksi.</div>
+</div>
+</div>
+</section>
+
+<section id="wa" class="panel">
+<div class="grid">
+<div class="card">
+<h2>WhatsApp OTP – Simulasi</h2><p class="sub">OTP (One-Time Password) merupakan kode sekali pakai sebagai faktor verifikasi tambahan. Pada praktikum ini, pesan hanya ditampilkan pada mockup WhatsApp di sebelah kanan.</p>
+<label for="waPhone">Nomor WhatsApp simulasi</label><input id="waPhone" value="+62 812-0000-0001">
+<div class="actions"><button id="sendWa">Buat OTP Simulasi</button></div>
+<label for="waInput">Masukkan kode OTP</label><input id="waInput" inputmode="numeric" maxlength="6" placeholder="6 digit OTP">
+<div class="actions"><button id="verifyWa">Verifikasi OTP</button><button class="secondary" id="resetWa">Reset</button></div>
+<div id="waStatus" class="status">Klik “Buat OTP Simulasi” untuk membuat kode.</div>
+</div>
+<div class="card"><h2>Pratinjau Pesan WhatsApp</h2>
+<div class="phone"><div class="phonebar"><strong>WhatsApp · Simulasi</strong><span style="font-size:11px;opacity:.8">Laboratorium Pembelajaran</span></div><div class="chatbody"><div id="waMessage" class="bubble">Belum ada pesan. Buat OTP untuk menampilkan pesan simulasi.</div></div></div>
+</div>
+</div>
+</section>
+
+<section id="totp" class="panel">
+<div class="grid">
+<div class="card">
+<h2>TOTP – Google Authenticator</h2><p class="sub">TOTP (Time-Based One-Time Password) menghasilkan kode berdasarkan secret key dan waktu. Kode berubah secara berkala, umumnya setiap 30 detik.</p>
+<div class="status warn">Secret demo bersama: <strong id="secretText">JBSWY3DPEHPK3PXP</strong>. Secret ini hanya untuk latihan. Jangan gunakan untuk akun pribadi atau produksi.</div>
+<div class="actions"><button id="showTotp">Tampilkan kode demo</button><button class="secondary" id="copySecret">Salin secret</button></div>
+<div id="totpStatus" class="status">Tekan tombol untuk menampilkan kode TOTP yang berlaku saat ini.</div>
+<label for="totpInput">Masukkan kode dari Google Authenticator</label><input id="totpInput" inputmode="numeric" maxlength="6" placeholder="6 digit TOTP">
+<div class="actions"><button id="verifyTotp">Verifikasi TOTP</button></div>
+<div id="totpVerifyStatus" class="status">Belum ada verifikasi.</div>
+</div>
+<div class="card">
+<h2>Authenticator – Tampilan Demo</h2>
+<div class="authapp"><div class="authhead"><div class="authicon">G</div><div><strong>Authenticator</strong><div class="small">Akun praktikum</div></div></div><div class="authbody"><div class="small">Cybersecurity Learning Lab</div><div id="authCode" class="totpcode">··· ···</div><div class="timer"><div id="timerBar"></div></div><div id="timerText" class="small" style="text-align:center;margin-top:8px">Menunggu kode TOTP</div></div></div>
+<p class="sub" style="margin-top:15px">Untuk menguji aplikasi Google Authenticator pada ponsel, tambahkan akun secara manual menggunakan secret key di atas. Pilih metode berbasis waktu (Time-based).</p>
+<div class="status">Parameter: 6 digit · periode 30 detik · HMAC-SHA1 · secret Base32.</div>
+</div>
+</div>
+</section>
+</main>
+<footer>Cybersecurity Learning Lab · Materi praktikum Dasar Keamanan Siber</footer>
+<script>
+const users={
+ admin:{password:'Belajar123!',role:'Administrator'},
+ dosen1:{password:'Belajar123!',role:'Dosen'},
+ mhs1:{password:'Belajar123!',role:'Mahasiswa'},
+ kaprodi:{password:'Belajar123!',role:'Kaprodi'}
+};
+let currentUser=null, waCode=null, waExpiry=0, totpCurrent=null, totpTimer=null;
+const $=id=>document.getElementById(id);
+function status(id,msg,type=''){const el=$(id);el.className='status'+(type?' '+type:'');el.textContent=msg;}
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===btn.dataset.tab));
+}));
+function updateSession(){
+ $('sessionInfo').textContent=currentUser?`Login sebagai ${currentUser.username} · Peran: ${currentUser.role}`:'Silakan login pada tab Authentication terlebih dahulu.';
+}
+$('loginBtn').addEventListener('click',()=>{
+ const u=$('username').value.trim(),p=$('password').value;
+ if(!users[u]||users[u].password!==p){currentUser=null;updateSession();status('loginStatus','Login gagal. Periksa kembali username dan password.','error');return;}
+ currentUser={username:u,role:users[u].role};updateSession();
+ status('loginStatus',`Authentication berhasil. Selamat datang, ${u}. Peran Anda: ${currentUser.role}.`,'success');
+});
+$('logoutBtn').addEventListener('click',()=>{currentUser=null;updateSession();status('loginStatus','Anda telah logout.','');status('accessStatus','Silakan login kembali untuk menguji hak akses.');});
+const permissions={
+ 'Administrator':['dashboard','manage'],
+ 'Dosen':['dashboard','grades'],
+ 'Mahasiswa':['dashboard','ownGrade'],
+ 'Kaprodi':['dashboard','reports']
+};
+const resourceNames={dashboard:'Dashboard umum',manage:'Pengelolaan akun',grades:'Input nilai perkuliahan',ownGrade:'Melihat nilai pribadi',reports:'Laporan program studi'};
+$('checkAccess').addEventListener('click',()=>{
+ if(!currentUser){status('accessStatus','Akses ditolak: pengguna belum melakukan authentication (login).','error');return;}
+ const r=$('resource').value,allowed=permissions[currentUser.role].includes(r);
+ status('accessStatus',allowed?`ACCESS GRANTED — ${currentUser.role} diizinkan mengakses ${resourceNames[r]}.`:`ACCESS DENIED — ${currentUser.role} tidak memiliki izin untuk ${resourceNames[r]}.` ,allowed?'success':'error');
+});
+$('sendWa').addEventListener('click',()=>{
+ waCode=String(Math.floor(100000+Math.random()*900000));waExpiry=Date.now()+120000;
+ $('waMessage').innerHTML=`Halo!<br><br>Kode verifikasi Anda:<span class="code">${waCode}</span>Kode berlaku selama 2 menit. Jangan bagikan kode ini kepada siapa pun.<br><br><span class="small">Pesan otomatis · Simulasi lokal</span>`;
+ $('waInput').value='';status('waStatus','OTP simulasi berhasil dibuat dan ditampilkan pada pratinjau WhatsApp.','success');
+});
+$('verifyWa').addEventListener('click',()=>{
+ if(!waCode){status('waStatus','Buat OTP terlebih dahulu.','error');return;}
+ if(Date.now()>waExpiry){waCode=null;status('waStatus','OTP telah kedaluwarsa. Buat kode baru.','error');return;}
+ if($('waInput').value.trim()===waCode){waCode=null;status('waStatus','OTP benar. Verifikasi berhasil.','success');}
+ else status('waStatus','OTP salah. Periksa kembali kode yang dimasukkan.','error');
+});
+$('resetWa').addEventListener('click',()=>{waCode=null;$('waInput').value='';$('waMessage').textContent='Belum ada pesan. Buat OTP untuk menampilkan pesan simulasi.';status('waStatus','Simulasi OTP direset.');});
+const BASE32='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567',SECRET='JBSWY3DPEHPK3PXP';
+function base32ToBytes(s){let bits='';for(const c of s.replace(/=+$/,'').toUpperCase()){const v=BASE32.indexOf(c);if(v<0)throw Error('Secret Base32 tidak valid');bits+=v.toString(2).padStart(5,'0');}const out=[];for(let i=0;i+8<=bits.length;i+=8)out.push(parseInt(bits.slice(i,i+8),2));return new Uint8Array(out);}
+async function generateTotp(time=Math.floor(Date.now()/1000)){
+ const key=await crypto.subtle.importKey('raw',base32ToBytes(SECRET),{name:'HMAC',hash:'SHA-1'},false,['sign']);
+ const counter=Math.floor(time/30),buf=new ArrayBuffer(8),view=new DataView(buf);
+ view.setUint32(4,counter,false);
+ const hash=new Uint8Array(await crypto.subtle.sign('HMAC',key,buf));
+ const offset=hash[hash.length-1]&15;
+ const binary=((hash[offset]&127)<<24)|((hash[offset+1]&255)<<16)|((hash[offset+2]&255)<<8)|(hash[offset+3]&255);
+ return String(binary%1000000).padStart(6,'0');
+}
+async function refreshTotp(){
+ try{
+  const now=Math.floor(Date.now()/1000),remaining=30-(now%30);
+  totpCurrent=await generateTotp(now);$('authCode').textContent=totpCurrent.slice(0,3)+' '+totpCurrent.slice(3);
+  $('timerText').textContent=`Kode berubah dalam ${remaining} detik`;
+  $('timerBar').style.width=(remaining/30*100)+'%';
+  status('totpStatus','Kode TOTP demo saat ini ditampilkan pada panel Authenticator.','success');
+ }catch(e){status('totpStatus','Browser tidak mendukung Web Crypto pada konteks ini. Jalankan melalui localhost atau HTTPS.','error');}
+}
+$('showTotp').addEventListener('click',refreshTotp);
+$('verifyTotp').addEventListener('click',async()=>{
+ const entered=$('totpInput').value.trim();
+ if(!/^\d{6}$/.test(entered)){status('totpVerifyStatus','Masukkan kode TOTP 6 digit.','error');return;}
+ try{
+  const now=Math.floor(Date.now()/1000);
+  const candidates=await Promise.all([-30,0,30].map(d=>generateTotp(now+d)));
+  status('totpVerifyStatus',candidates.includes(entered)?'TOTP benar. Verifikasi berhasil.':'TOTP salah atau sudah kedaluwarsa. Sinkronkan waktu perangkat dan coba lagi.',candidates.includes(entered)?'success':'error');
+ }catch(e){status('totpVerifyStatus','Tidak dapat memverifikasi TOTP. Coba jalankan melalui localhost atau HTTPS.','error');}
+});
+$('copySecret').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText(SECRET);status('totpStatus','Secret Base32 berhasil disalin.','success');}
+ catch(e){status('totpStatus','Secret Base32: '+SECRET+' (salin secara manual).','warn');}
+});
+$('secretText').textContent=SECRET;
+setInterval(()=>{const remain=30-(Math.floor(Date.now()/1000)%30);$('timerText').textContent=`Kode berubah dalam ${remain} detik`; $('timerBar').style.width=(remain/30*100)+'%';},250);
+</script>
+</body>
+</html>

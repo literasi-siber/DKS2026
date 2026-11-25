@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulasi Bagan Alur Access Control: DAC, MAC, RBAC, dan ABAC</title>
+<style>
+  :root {
+    --bg: #0b1322;
+    --card: #131e33;
+    --card-alt: #18253e;
+    --border: #283a5b;
+    --text: #e6eefc;
+    --muted: #93a6c8;
+    --red: #f45b69;
+    --red-bg: rgba(244, 91, 105, 0.14);
+    --green: #2ec4b6;
+    --green-bg: rgba(46, 196, 182, 0.14);
+    --blue: #4ea8de;
+    --blue-bg: rgba(78, 168, 222, 0.14);
+    --amber: #f7b801;
+    --amber-bg: rgba(247, 184, 1, 0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px 14px 48px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    max-width: 1040px;
+    margin: 0 auto 20px;
+  }
+  .header h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+  .header p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Navigation Tabs */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 1040px;
+    margin: 0 auto 20px;
+  }
+  .tab-btn {
+    background: var(--card);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tab-btn:hover {
+    border-color: var(--blue);
+    color: var(--text);
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #1d3557, #1b4965);
+    color: #fff;
+    border-color: var(--blue);
+    box-shadow: 0 4px 14px rgba(78, 168, 222, 0.25);
+  }
+
+  /* Main Workspace */
+  .workspace {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.35fr 0.95fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .panel-top h2 {
+    font-size: 17px;
+    margin-bottom: 4px;
+  }
+  .panel-top .subtitle {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  /* Scenario Selector Pills */
+  .scenario-group {
+    display: flex;
+    gap: 6px;
+    background: #0d1526;
+    padding: 4px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+  }
+  .scen-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 6px 11px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .scen-btn.active-allow {
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid rgba(46, 196, 182, 0.45);
+  }
+  .scen-btn.active-deny {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid rgba(244, 91, 105, 0.45);
+  }
+
+  /* Flowchart Canvas */
+  .flow-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    flex: 1;
+  }
+
+  .node {
+    width: 100%;
+    max-width: 440px;
+    background: var(--card-alt);
+    border: 2px solid #324870;
+    border-radius: 11px;
+    padding: 13px 16px;
+    text-align: center;
+    transition: all 0.35s ease;
+    position: relative;
+  }
+  .node-header {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .node-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .node-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .attr-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .chip {
+    font-family: Consolas, monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #0e1729;
+    border: 1px solid #2e4369;
+    color: #cfe0fc;
+  }
+  .chip.amber { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+  .chip.blue { background: var(--blue-bg); border-color: var(--blue); color: #90e0ef; }
+  .chip.green { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .chip.red { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+  /* Highlight states */
+  .node.hl-blue { border-color: var(--blue); box-shadow: 0 0 18px rgba(78, 168, 222, 0.32); transform: scale(1.015); }
+  .node.hl-amber { border-color: var(--amber); box-shadow: 0 0 18px rgba(247, 184, 1, 0.32); transform: scale(1.015); }
+  .node.hl-green { border-color: var(--green); box-shadow: 0 0 20px rgba(46, 196, 182, 0.38); transform: scale(1.02); }
+  .node.hl-red { border-color: var(--red); box-shadow: 0 0 20px rgba(244, 91, 105, 0.38); transform: scale(1.02); }
+
+  /* Middle Row for Policy + Context/Admin */
+  .mid-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 520px;
+    align-items: stretch;
+    justify-content: center;
+  }
+  @media (max-width: 540px) {
+    .mid-row { flex-direction: column; align-items: center; }
+  }
+  .side-box {
+    background: #101b30;
+    border: 1.5px dashed #3b5984;
+    border-radius: 10px;
+    padding: 10px 12px;
+    flex: 0.9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    font-size: 11.5px;
+    transition: all 0.35s ease;
+  }
+  .side-box.hl-amber { border-style: solid; border-color: var(--amber); box-shadow: 0 0 16px rgba(247, 184, 1, 0.3); }
+  .side-box.hl-blue { border-style: solid; border-color: var(--blue); box-shadow: 0 0 16px rgba(78, 168, 222, 0.3); }
+
+  /* Arrows */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 44px;
+    justify-content: center;
+    width: 100%;
+  }
+  .arrow .line {
+    width: 2px;
+    height: 12px;
+    background: #3a507a;
+    transition: background 0.3s;
+  }
+  .arrow .lbl {
+    font-size: 11px;
+    background: #0d1526;
+    border: 1px solid #2b3e63;
+    padding: 3px 10px;
+    border-radius: 12px;
+    color: var(--muted);
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .arrow.hl-blue .line { background: var(--blue); }
+  .arrow.hl-blue .lbl { border-color: var(--blue); color: #90e0ef; background: #10243b; font-weight: 600; }
+  .arrow.hl-green .line { background: var(--green); }
+  .arrow.hl-green .lbl { border-color: var(--green); color: var(--green); background: #0e2929; font-weight: 600; }
+  .arrow.hl-red .line { background: var(--red); }
+  .arrow.hl-red .lbl { border-color: var(--red); color: var(--red); background: #29131c; font-weight: 600; }
+
+  /* Controls & Audit Panel */
+  .step-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0d1526;
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  button.ctrl {
+    flex: 1;
+    min-width: 105px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  button.ctrl:hover { opacity: 0.9; }
+  button.ctrl:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-play { background: linear-gradient(135deg, #2b6cb0, #2ec4b6); color: #fff; }
+  .btn-step { background: #233b61; color: #e6eefc; border: 1px solid #3c6099 !important; }
+  .btn-reset { background: #1c2840; color: var(--muted); flex: 0.45; min-width: 68px; }
+
+  .audit-box {
+    background: #09101d;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #c5d4ed;
+    flex: 1;
+    min-height: 165px;
+    overflow-y: auto;
+  }
+  .audit-entry {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #1e2d4a;
+  }
+  .audit-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .concept-card {
+    margin-top: 14px;
+    background: #101b30;
+    border-left: 3px solid var(--amber);
+    padding: 11px 13px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .concept-card strong { color: var(--text); }
+
+  /* Comparison Table */
+  .table-section {
+    max-width: 1120px;
+    margin: 24px auto 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .table-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  th {
+    background: #0e1729;
+    color: var(--blue);
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #1f2f4d;
+    color: #d6e2f5;
+    line-height: 1.45;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* Floating Packet */
+  .packet {
+    position: fixed;
+    z-index: 9999;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: Consolas, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                top 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.25s ease,
+                transform 0.25s ease;
+    white-space: nowrap;
+  }
+  .packet.blue { background: #102a45; color: #90e0ef; border: 1.5px solid var(--blue); }
+  .packet.amber { background: #382b09; color: #ffd166; border: 1.5px solid var(--amber); }
+  .packet.green { background: #0d3330; color: #72efdd; border: 1.5px solid var(--green); }
+  .packet.red { background: #3a1219; color: #ff8fa3; border: 1.5px solid var(--red); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Simulasi Bagan Alur Model Kontrol Akses (Access Control Models)</h1>
+  <p>Bandingkan cara kerja <b>DAC</b>, <b>MAC</b>, <b>RBAC</b>, dan <b>ABAC</b> dalam mengevaluasi permintaan akses dari <i>Subject</i> ke <i>Resource/Object</i>.</p>
+</div>
+
+<!-- Model Tabs -->
+<div class="tabs" id="model-tabs">
+  <button class="tab-btn active" onclick="selectModel('DAC')">🔑 1. DAC (Discretionary)</button>
+  <button class="tab-btn" onclick="selectModel('MAC')">🛡️ 2. MAC (Mandatory)</button>
+  <button class="tab-btn" onclick="selectModel('RBAC')">👥 3. RBAC (Role-Based)</button>
+  <button class="tab-btn" onclick="selectModel('ABAC')">⚙️ 4. ABAC (Attribute-Based)</button>
+</div>
+
+<!-- Main Simulation Workspace -->
+<div class="workspace">
+  <!-- Left: Flowchart Diagram -->
+  <div class="panel">
+    <div class="panel-top">
+      <div>
+        <h2 id="model-title">DAC — Discretionary Access Control</h2>
+        <div class="subtitle" id="model-subtitle">Pemilik data (Data Owner) menentukan siapa yang boleh mengakses file melalui ACL.</div>
+      </div>
+      <div class="scenario-group">
+        <button class="scen-btn active-allow" id="btn-scen-allow" onclick="setScenario('allow')">✅ Skenario Izinkan</button>
+        <button class="scen-btn" id="btn-scen-deny" onclick="setScenario('deny')">⛔ Skenario Tolak</button>
+      </div>
+    </div>
+
+    <div class="flow-area">
+      <!-- Node 1: Subject -->
+      <div class="node" id="node-subject">
+        <div class="node-header">1. SUBJECT (PEMOHON AKSES)</div>
+        <div class="node-title" id="subj-title">User: Budi (Rekan Tim)</div>
+        <div class="node-desc" id="subj-desc">Meminta izin membaca & mengubah dokumen proyek.</div>
+        <div class="attr-list" id="subj-attrs"></div>
+      </div>
+
+      <!-- Arrow 1 -->
+      <div class="arrow" id="arr-1">
+        <div class="line"></div>
+        <div class="lbl" id="arr1-lbl">Permintaan Akses: Read/Write ke Dokumen</div>
+        <div class="line"></div>
+      </div>
+
+      <!-- Node 2: Policy Engine + Authority/Context -->
+      <div class="mid-row">
+        <div class="node" id="node-policy" style="flex:1.15;">
+          <div class="node-header">2. MEKANISME EVALUASI KEBIJAKAN</div>
+          <div class="node-title" id="pol-title">Access Control List (ACL)</div>
+          <div class="node-desc" id="pol-desc">Memeriksa daftar identitas yang didaftarkan oleh pemilik file.</div>
+          <div class="attr-list" id="pol-attrs"></div>
+        </div>
+
+        <div class="side-box" id="node-authority">
+          <div style="font-size:10px;color:var(--amber);font-weight:700;margin-bottom:3px;" id="auth-header">PENENTU KEBIJAKAN</div>
+          <strong id="auth-title" style="font-size:13px;margin-bottom:4px;">👤 Andi (Data Owner)</strong>
+          <div id="auth-desc" style="color:var(--muted);font-size:11px;line-height:1.4;">Pemilik file bebas menambah/menghapus izin user lain kapan saja.</div>
+        </div>
+      </div>
+
+      <!-- Arrow 2 -->
+      <div class="arrow" id="arr-2">
+        <div class="line"></div>
+        <div class="lbl" id="arr2-lbl">Keputusan Evaluasi Kebijakan</div>
+        <div class="line"></div>
+      </div>
+
+      <!-- Node 3: Object / Resource -->
+      <div class="node" id="node-resource">
+        <div class="node-header">3. RESOURCE / OBJECT (TARGET)</div>
+        <div class="node-title" id="res-title">File: Laporan_Anggaran_Q4.xlsx</div>
+        <div class="node-desc" id="res-desc">Dokumen sensitif milik departemen proyek.</div>
+        <div class="attr-list" id="res-attrs"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Controls & Technical Audit Log -->
+  <div class="panel">
+    <div class="panel-top" style="margin-bottom:12px;">
+      <div>
+        <h2>🎛️ Kontrol Simulasi & Audit Log</h2>
+        <div class="subtitle">Jalankan otomatis atau langkah demi langkah untuk melihat alur keputusan.</div>
+      </div>
+    </div>
+
+    <div class="step-indicator">
+      <span>Status Progres:</span>
+      <strong id="step-counter" style="color:var(--blue);">0 / 4 Langkah</strong>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl btn-play" id="btn-auto" onclick="runAuto()">▶ Otomatis</button>
+      <button class="ctrl btn-step" id="btn-next" onclick="nextStep()">⏭ Langkah Berikutnya</button>
+      <button class="ctrl btn-reset" onclick="resetSim()">Reset</button>
+    </div>
+
+    <div class="audit-box" id="audit-log">
+      <div class="audit-entry">Siap menjalankan simulasi. Pilih skenario <b>Izinkan</b> atau <b>Tolak</b> di atas bagan, lalu tekan <b>▶ Otomatis</b> atau <b>⏭ Langkah Berikutnya</b>.</div>
+    </div>
+
+    <div class="concept-card" id="concept-note">
+      <strong>Catatan Keamanan DAC:</strong> Karena pemilik file memiliki kendali penuh, risiko utamanya adalah <i>privilege propagation</i> (user yang diberi izin bisa menyalin atau membagikan ulang data ke pihak luar tanpa sepengetahuan admin pusat).
+    </div>
+  </div>
+</div>
+
+<!-- Comparison Table -->
+<div class="table-section">
+  <h3>📊 Matriks Perbandingan Model Kontrol Akses</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Penentu Kebijakan</th>
+          <th>Dasar Keputusan</th>
+          <th>Kelebihan Utama</th>
+          <th>Kelemahan / Risiko</th>
+          <th>Contoh Penerapan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>DAC</strong><br><span style="color:var(--muted);font-size:11px;">Discretionary</span></td>
+          <td>Pemilik Data (<i>Data Owner</i>)</td>
+          <td>Identitas User / Grup pada ACL</td>
+          <td>Sangat fleksibel & mudah digunakan sehari-hari</td>
+          <td>Rentan kebocoran jika pemilik salah memberi izin</td>
+          <td>Permission folder Windows/Linux (chmod), Google Drive Share</td>
+        </tr>
+        <tr>
+          <td><strong>MAC</strong><br><span style="color:var(--muted);font-size:11px;">Mandatory</span></td>
+          <td>Administrator Keamanan Pusat (Sistem)</td>
+          <td>Label Klasifikasi Objek vs <i>Clearance</i> Subjek</td>
+          <td>Keamanan sangat ketat; user tidak bisa mengubah izin</td>
+          <td>Kaku & membutuhkan administrasi pelabelan tinggi</td>
+          <td>Sistem militer/intelijen, SELinux, Dokumen Rahasia Negara</td>
+        </tr>
+        <tr>
+          <td><strong>RBAC</strong><br><span style="color:var(--muted);font-size:11px;">Role-Based</span></td>
+          <td>Administrator Organisasi / IAM</td>
+          <td>Peran/Jabatan (<i>Role</i>) yang dimiliki User</td>
+          <td>Mudah dikelola untuk ribuan karyawan sesuai struktur</td>
+          <td><i>Role explosion</i> jika terlalu banyak pengecualian</td>
+          <td>ERP Perusahaan, Portal Akademik (Dosen vs Mahasiswa), IAM</td>
+        </tr>
+        <tr>
+          <td><strong>ABAC</strong><br><span style="color:var(--muted);font-size:11px;">Attribute-Based</span></td>
+          <td>Policy Engine (PDP) berbasis aturan dinamis</td>
+          <td>Kombinasi atribut User, Resource, Aksi & Lingkungan</td>
+          <td>Sangat granular & kontekstual (Zero Trust)</td>
+          <td>Kompleks dalam perancangan dan pengujian aturan</td>
+          <td>Cloud IAM (AWS IAM Policy), Zero Trust Network Access (ZTNA)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const MODELS = {
+    DAC: {
+      title: 'DAC — Discretionary Access Control',
+      subtitle: 'Pemilik data (Data Owner) menentukan sendiri siapa yang boleh mengakses objek via ACL.',
+      concept: '<strong>Catatan Keamanan DAC:</strong> Karena pemilik file memiliki kendali penuh, risiko utamanya adalah <i>privilege propagation</i> — penerima akses bisa menyalin file dan membagikannya kembali ke pihak yang tidak berwenang.',
+      authHeader: 'PENENTU KEBIJAKAN',
+      authTitle: '👤 Andi (Data Owner)',
+      authDesc: 'Pemilik sah dokumen; bebas mengedit daftar ACL tanpa persetujuan admin pusat.',
+      polTitle: 'Access Control List (ACL)',
+      polDesc: 'Daftar izin melekat pada file yang diatur langsung oleh Andi.',
+      polAttrs: ['Owner: Andi (Full)', 'Budi: Read/Write', 'Citra: None'],
+      resTitle: 'File: Laporan_Anggaran_Q4.xlsx',
+      resDesc: 'Objek file dalam folder bersama departemen.',
+      resAttrs: ['Owner: Andi', 'Tipe: Spreadsheet'],
+      allow: {
+        subjTitle: 'User: Budi (Identitas Terdaftar)',
+        subjDesc: 'Mengajukan permintaan membuka & mengedit file milik Andi.',
+        subjAttrs: ['User ID: budi.santoso', 'Status: Diundang oleh Owner'],
+        arr1: '1. Budi meminta akses Read/Write ke Laporan_Anggaran_Q4.xlsx',
+        pkt1: '📨 Request: Budi (Read/Write)',
+        pktAuth: '📋 Cek ACL Pemilik: Budi = ALLOW',
+        arr2: '2. ACL mengizinkan akses karena Budi terdaftar oleh Andi',
+        pkt2: '✅ ALLOW: Budi diizinkan baca/tulis',
+        steps: [
+          '<b>[1/4] Permintaan Subjek:</b> User <code>Budi</code> mencoba membuka file <code>Laporan_Anggaran_Q4.xlsx</code>.',
+          '<b>[2/4] Pemeriksaan ACL Pemilik:</b> Sistem memeriksa <i>Access Control List</i> yang sebelumnya diatur secara sukarela oleh pemilik file (<code>Andi</code>).',
+          '<b>[3/4] Evaluasi Kebijakan:</b> Nama <code>Budi</code> ditemukan pada entri ACL dengan hak <code>Read/Write</code>.',
+          '<b>[4/4] Akses Diterima (ALLOW):</b> Budi berhasil membuka dokumen. <span style="color:#f7b801">Catatan: Budi juga berpotensi menyalin isi file ini ke luar sistem.</span>'
+        ]
+      },
+      deny: {
+        subjTitle: 'User: Citra (Tidak Ada di ACL)',
+        subjDesc: 'Mencoba membuka file proyek tanpa izin dari pemilik file.',
+        subjAttrs: ['User ID: citra.lestari', 'Status: Tidak tercantum di ACL'],
+        arr1: '1. Citra meminta akses Read ke Laporan_Anggaran_Q4.xlsx',
+        pkt1: '📨 Request: Citra (Read)',
+        pktAuth: '📋 Cek ACL Pemilik: Citra = NOT FOUND',
+        arr2: '2. ACL menolak akses (Implicit Deny)',
+        pkt2: '⛔ DENY: Citra tidak ada di ACL',
+        steps: [
+          '<b>[1/4] Permintaan Subjek:</b> User <code>Citra</code> mencoba mengakses file <code>Laporan_Anggaran_Q4.xlsx</code>.',
+          '<b>[2/4] Pemeriksaan ACL Pemilik:</b> Sistem membaca daftar ACL yang ditetapkan oleh <code>Andi</code> selaku pemilik data.',
+          '<b>[3/4] Evaluasi Kebijakan:</b> Identitas <code>Citra</code> tidak terdaftar di dalam ACL file tersebut.',
+          '<b>[4/4] Akses Ditolak (DENY):</b> Sistem menolak permintaan secara otomatis karena tidak ada izin eksplisit dari pemilik file.'
+        ]
+      }
+    },
+
+    MAC: {
+      title: 'MAC — Mandatory Access Control',
+      subtitle: 'Sistem pusat memaksa aturan berbasis Label Klasifikasi & Tingkat Clearance (Bell-LaPadula).',
+      concept: '<strong>Catatan Keamanan MAC:</strong> Pengguna (bahkan pemilik dokumen) <b>tidak dapat</b> menurunkan klasifikasi atau membagikan file rahasia ke user dengan <i>clearance</i> lebih rendah. Aturan dikunci oleh kebijakan sistem.',
+      authHeader: 'OTORITAS PUSAT',
+      authTitle: '🏛️ Security Kernel / Admin Pusat',
+      authDesc: 'Menetapkan label klasifikasi secara wajib; user tidak bisa mengubah aturan ini.',
+      polTitle: 'Label Dominance Check (No Read Up)',
+      polDesc: 'Membandingkan Security Clearance Subjek vs Classification Label Objek.',
+      polAttrs: ['Hirarki: Public < Confidential < Secret < Top Secret'],
+      resTitle: 'Dokumen: Rencana_Pertahanan_Siber.pdf',
+      resDesc: 'Objek berlabel klasifikasi tinggi yang dikunci sistem.',
+      resAttrs: ['Label Objek: TOP SECRET', 'Mode: Mandatory'],
+      allow: {
+        subjTitle: 'User: Direktur Keamanan (Clearance Tinggi)',
+        subjDesc: 'Memiliki izin keamanan resmi tingkat Top Secret.',
+        subjAttrs: ['Clearance: TOP SECRET', 'Kategori: Cyber-Ops'],
+        arr1: '1. Subjek (Clearance: Top Secret) meminta baca objek (Label: Top Secret)',
+        pkt1: '🪪 Clearance: TOP SECRET',
+        pktAuth: '⚖️ Evaluasi: Top Secret >= Top Secret',
+        arr2: '2. Syarat dominasi label terpenuhi (Clearance >= Label Objek)',
+        pkt2: '✅ ALLOW: Klasifikasi Sesuai',
+        steps: [
+          '<b>[1/4] Identifikasi Clearance:</b> Subjek memiliki <i>Security Clearance</i> <code>TOP SECRET</code> yang diverifikasi oleh sistem.',
+          '<b>[2/4] Pemeriksaan Label Wajib:</b> Security Kernel membandingkan label subjek dengan label objek (<code>TOP SECRET</code>).',
+          '<b>[3/4] Evaluasi Aturan Bell-LaPadula:</b> Karena tingkat <i>Clearance</i> subjek (Top Secret) setara atau lebih tinggi dari label objek (Top Secret), syarat <i>No Read Up</i> terpenuhi.',
+          '<b>[4/4] Akses Diterima (ALLOW):</b> Dokumen dibuka dalam sesi terpantau. Subjek tetap dilarang menyalin isinya ke dokumen berlabel lebih rendah (<i>No Write Down</i>).'
+        ]
+      },
+      deny: {
+        subjTitle: 'User: Analis Junior (Clearance Rendah)',
+        subjDesc: 'Memiliki clearance Secret, mencoba membaca dokumen Top Secret.',
+        subjAttrs: ['Clearance: SECRET', 'Status: Tidak cukup tinggi'],
+        arr1: '1. Subjek (Clearance: Secret) meminta baca objek (Label: Top Secret)',
+        pkt1: '🪪 Clearance: SECRET',
+        pktAuth: '⚖️ Evaluasi: Secret < Top Secret (GAGAL)',
+        arr2: '2. Diblokir paksa oleh kebijakan Mandatory (No Read Up)',
+        pkt2: '⛔ DENY: Clearance Tidak Mencukupi',
+        steps: [
+          '<b>[1/4] Identifikasi Clearance:</b> Subjek hanya memiliki <i>Security Clearance</i> tingkat <code>SECRET</code>.',
+          '<b>[2/4] Pemeriksaan Label Wajib:</b> Sistem membandingkan clearance <code>SECRET</code> terhadap label dokumen <code>TOP SECRET</code>.',
+          '<b>[3/4] Pelanggaran No Read Up:</b> Tingkat clearance subjek berada di bawah klasifikasi objek (<code>Secret &lt; Top Secret</code>).',
+          '<b>[4/4] Akses Ditolak Paksa (DENY):</b> Sistem memblokir akses. Bahkan jika pembuat dokumen ingin membagikannya, MAC tetap melarang keras.'
+        ]
+      }
+    },
+
+    RBAC: {
+      title: 'RBAC — Role-Based Access Control',
+      subtitle: 'Hak akses diberikan berdasarkan Peran/Jabatan (Role) user di dalam organisasi, bukan individu.',
+      concept: '<strong>Catatan Keamanan RBAC:</strong> Mempermudah administrasi karyawan baru atau mutasi jabatan (cukup ubah <i>Role</i> user), namun kurang sensitif terhadap konteks dinamis seperti lokasi login atau jam akses.',
+      authHeader: 'MATRIKS PERAN (IAM)',
+      authTitle: '🗂️ Role-Permission Matrix',
+      authDesc: 'SysAdmin = [Read, Write, Restart] | Auditor = [Read-Only Log]',
+      polTitle: 'RBAC Policy Engine',
+      polDesc: 'Memetakan User → Role → Daftar Permission yang diizinkan.',
+      polAttrs: ['Prinsip: Least Privilege per Role'],
+      resTitle: 'Server: Production_Database_Cluster',
+      resDesc: 'Target operasi perubahan konfigurasi & penghapusan data.',
+      resAttrs: ['Aksi Diminta: WRITE / DELETE CONFIG'],
+      allow: {
+        subjTitle: 'User: Dimas (Role: SysAdmin)',
+        subjDesc: 'Mendapatkan penugasan peran System Administrator.',
+        subjAttrs: ['User: dimas', 'Assigned Role: SysAdmin'],
+        arr1: '1. Dimas (Role: SysAdmin) meminta aksi Write/Update Config',
+        pkt1: '🎭 Role: SysAdmin -> Write',
+        pktAuth: '📊 Cek Matriks: SysAdmin punya izin Write',
+        arr2: '2. Role SysAdmin memiliki permission Write pada matriks',
+        pkt2: '✅ ALLOW: Permission Sesuai Role',
+        steps: [
+          '<b>[1/4] Pemetaan Identitas ke Role:</b> Sistem mengenali <code>Dimas</code> memiliki peran aktif <code>SysAdmin</code>.',
+          '<b>[2/4] Pengecekan Matriks Role-Permission:</b> Policy Engine memeriksa apakah role <code>SysAdmin</code> mencakup izin <code>WRITE / UPDATE</code>.',
+          '<b>[3/4] Validasi Hak Peran:</b> Izin <code>WRITE</code> terdaftar sah di dalam paket permission milik <code>SysAdmin</code>.',
+          '<b>[4/4] Akses Diterima (ALLOW):</b> Perubahan konfigurasi pada server produksi diizinkan.'
+        ]
+      },
+      deny: {
+        subjTitle: 'User: Rina (Role: Internal Auditor)',
+        subjDesc: 'Hanya memiliki peran Auditor untuk pemeriksaan laporan.',
+        subjAttrs: ['User: rina', 'Assigned Role: Auditor'],
+        arr1: '1. Rina (Role: Auditor) mencoba aksi Write/Delete Config',
+        pkt1: '🎭 Role: Auditor -> Write',
+        pktAuth: '📊 Cek Matriks: Auditor = Read-Only',
+        arr2: '2. Role Auditor tidak memiliki izin Write/Delete',
+        pkt2: '⛔ DENY: Role Hanya Read-Only',
+        steps: [
+          '<b>[1/4] Pemetaan Identitas ke Role:</b> Sistem mengenali <code>Rina</code> tergabung dalam peran <code>Internal Auditor</code>.',
+          '<b>[2/4] Pengecekan Matriks Role-Permission:</b> Policy Engine memeriksa daftar izin untuk peran <code>Auditor</code> (hanya memiliki <code>READ</code>).',
+          '<b>[3/4] Ketidaksesuaian Permission:</b> Aksi <code>WRITE / DELETE</code> berada di luar wewenang peran Auditor.',
+          '<b>[4/4] Akses Ditolak (DENY):</b> Permintaan ditolak demi menjaga prinsip <i>Least Privilege</i> dan pemisahan tugas (<i>Separation of Duties</i>).'
+        ]
+      }
+    },
+
+    ABAC: {
+      title: 'ABAC — Attribute-Based Access Control',
+      subtitle: 'Evaluasi dinamis multi-atribut (Subjek, Objek, Aksi, dan Konteks Lingkungan) secara real-time.',
+      concept: '<strong>Catatan Keamanan ABAC:</strong> Fondasi utama arsitektur <b>Zero Trust</b>. Meskipun user berasal dari departemen yang benar, akses tetap ditolak jika atribut lingkungan (jam, lokasi IP, atau keamanan perangkat) melanggar kebijakan.',
+      authHeader: 'KONTEKS LINGKUNGAN',
+      authTitle: '🌐 Environment Attributes',
+      authDesc: 'Mengevaluasi Waktu, Lokasi Jaringan & Status Perangkat secara real-time.',
+      polTitle: 'Policy Decision Point (PDP)',
+      polDesc: 'Aturan: Dept==Finance AND Lokasi==Kantor AND Jam==08:00-17:00',
+      polAttrs: ['Rule Engine: XACML / JSON Policy'],
+      resTitle: 'Data: Master_Payroll_Karyawan.db',
+      resDesc: 'Database penggajian sensitif milik Departemen Finance.',
+      resAttrs: ['Resource Dept: Finance', 'Sensitivity: High'],
+      allow: {
+        subjTitle: 'User: Sari (Dept: Finance | Laptop Kantor)',
+        subjDesc: 'Mengakses data payroll pada jam kerja dari jaringan internal.',
+        subjAttrs: ['Dept: Finance', 'Time: 10:15 WIB', 'Loc: IP Kantor Jakarta'],
+        arr1: '1. Mengirim bundel atribut (User + Resource + Environment)',
+        pkt1: '📦 Dept:Finance | 10:15 | IP Kantor',
+        pktAuth: '⚙️ PDP Evaluasi: Semua Atribut = TRUE',
+        arr2: '2. Seluruh kondisi atribut terpenuhi (Policy Match)',
+        pkt2: '✅ ALLOW: Konteks Aman & Valid',
+        steps: [
+          '<b>[1/4] Pengumpulan Atribut:</b> Sistem mengumpulkan atribut Subjek (<code>Dept=Finance</code>), Resource (<code>Payroll</code>), dan Lingkungan (<code>Jam 10:15 WIB</code>, <code>IP Kantor Jakarta</code>, <code>Managed Device</code>).',
+          '<b>[2/4] Evaluasi Konteks oleh PDP:</b> <i>Policy Decision Point</i> mencocokkan seluruh atribut terhadap aturan kebijakan dinamis.',
+          '<b>[3/4] Hasil Evaluasi Multi-Faktor:</b> Departemen cocok (Finance), waktu berada di jam kerja (08:00–17:00), dan jaringan berasal dari VPN/Kantor terpercaya.',
+          '<b>[4/4] Akses Diterima (ALLOW):</b> Policy Enforcement Point (PEP) membuka akses baca ke database Payroll.'
+        ]
+      },
+      deny: {
+        subjTitle: 'User: Sari (Dept: Finance | Public WiFi)',
+        subjDesc: 'User yang sama, tetapi mengakses pada pukul 02:15 WIB dari WiFi publik.',
+        subjAttrs: ['Dept: Finance', 'Time: 02:15 WIB', 'Loc: Public WiFi Kafe'],
+        arr1: '1. Mengirim bundel atribut (User + Resource + Anomali Lingkungan)',
+        pkt1: '📦 Dept:Finance | 02:15 | Public WiFi',
+        pktAuth: '⚙️ PDP Evaluasi: Jam & Lokasi = FALSE',
+        arr2: '2. Pelanggaran kebijakan konteks (Di luar jam kerja & jaringan publik)',
+        pkt2: '⛔ DENY: Risiko Konteks Lingkungan',
+        steps: [
+          '<b>[1/4] Pengumpulan Atribut:</b> Meskipun atribut Subjek benar (<code>Dept=Finance</code>), sensor lingkungan mendeteksi <code>Jam 02:15 WIB</code> dan koneksi <code>Public WiFi</code>.',
+          '<b>[2/4] Evaluasi Konteks oleh PDP:</b> <i>Policy Decision Point</i> menjalankan aturan kondisional waktu dan lokasi.',
+          '<b>[3/4] Deteksi Anomali Atribut:</b> Kondisi <code>Jam Kerja</code> dan <code>Jaringan Terpercaya</code> bernilai <b>FALSE</b>.',
+          '<b>[4/4] Akses Ditolak Dinamis (DENY):</b> Akses diblokir seketika meskipun user adalah staf Finance yang sah — mencegah pencurian data saat kredensial bocor di luar jam kerja.'
+        ]
+      }
+    }
+  };
+
+  let currentModel = 'DAC';
+  let currentScenario = 'allow';
+  let currentStep = 0;
+  let isBusy = false;
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function animatePacket(fromId, toId, text, colorClass = 'blue', duration = 800) {
+    return new Promise(resolve => {
+      const fromEl = document.getElementById(fromId);
+      const toEl = document.getElementById(toId);
+      if (!fromEl || !toEl) return resolve();
+
+      const r1 = fromEl.getBoundingClientRect();
+      const r2 = toEl.getBoundingClientRect();
+
+      const pkt = document.createElement('div');
+      pkt.className = `packet ${colorClass}`;
+      pkt.textContent = text;
+      pkt.style.left = (r1.left + r1.width / 2) + 'px';
+      pkt.style.top = (r1.top + r1.height / 2) + 'px';
+      document.body.appendChild(pkt);
+
+      requestAnimationFrame(() => {
+        pkt.style.opacity = '1';
+        pkt.style.transform = 'translate(-50%, -50%) scale(1)';
+        requestAnimationFrame(() => {
+          pkt.style.left = (r2.left + r2.width / 2) + 'px';
+          pkt.style.top = (r2.top + r2.height / 2) + 'px';
+        });
+      });
+
+      setTimeout(() => {
+        pkt.style.opacity = '0';
+        pkt.style.transform = 'translate(-50%, -50%) scale(0.85)';
+        setTimeout(() => {
+          pkt.remove();
+          resolve();
+        }, 240);
+      }, duration);
+    });
+  }
+
+  function renderChips(containerId, items, colorClass = '') {
+    const el = document.getElementById(containerId);
+    el.innerHTML = items.map(t => `<span class="chip ${colorClass}">${t}</span>`).join('');
+  }
+
+  function renderView() {
+    const m = MODELS[currentModel];
+    const s = m[currentScenario];
+
+    document.getElementById('model-title').textContent = m.title;
+    document.getElementById('model-subtitle').textContent = m.subtitle;
+    document.getElementById('concept-note').innerHTML = m.concept;
+
+    // Subject
+    document.getElementById('subj-title').textContent = s.subjTitle;
+    document.getElementById('subj-desc').textContent = s.subjDesc;
+    renderChips('subj-attrs', s.subjAttrs, currentScenario === 'allow' ? 'blue' : 'red');
+
+    // Policy & Authority
+    document.getElementById('pol-title').textContent = m.polTitle;
+    document.getElementById('pol-desc').textContent = m.polDesc;
+    renderChips('pol-attrs', m.polAttrs, 'amber');
+
+    document.getElementById('auth-header').textContent = m.authHeader;
+    document.getElementById('auth-title').textContent = m.authTitle;
+    document.getElementById('auth-desc').textContent = m.authDesc;
+
+    // Resource
+    document.getElementById('res-title').textContent = m.resTitle;
+    document.getElementById('res-desc').textContent = m.resDesc;
+    renderChips('res-attrs', m.resAttrs, '');
+
+    // Arrows
+    document.getElementById('arr1-lbl').textContent = s.arr1;
+    document.getElementById('arr2-lbl').textContent = s.arr2;
+
+    resetSim();
+  }
+
+  function selectModel(modelKey) {
+    if (isBusy) return;
+    currentModel = modelKey;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.includes(modelKey));
+    });
+    renderView();
+  }
+
+  function setScenario(scen) {
+    if (isBusy) return;
+    currentScenario = scen;
+    document.getElementById('btn-scen-allow').className = 'scen-btn' + (scen === 'allow' ? ' active-allow' : '');
+    document.getElementById('btn-scen-deny').className = 'scen-btn' + (scen === 'deny' ? ' active-deny' : '');
+    renderView();
+  }
+
+  function setControlsDisabled(disabled) {
+    document.getElementById('btn-auto').disabled = disabled;
+    document.getElementById('btn-next').disabled = disabled;
+  }
+
+  function resetSim() {
+    currentStep = 0;
+    isBusy = false;
+    setControlsDisabled(false);
+
+    ['node-subject', 'node-policy', 'node-authority', 'node-resource'].forEach(id => {
+      document.getElementById(id).classList.remove('hl-blue', 'hl-amber', 'hl-green', 'hl-red');
+    });
+    ['arr-1', 'arr-2'].forEach(id => {
+      document.getElementById(id).classList.remove('hl-blue', 'hl-green', 'hl-red');
+    });
+
+    document.getElementById('step-counter').textContent = '0 / 4 Langkah';
+    document.getElementById('audit-log').innerHTML =
+      `<div class="audit-entry">Model <b>${currentModel}</b> (${currentScenario === 'allow' ? 'Skenario Izinkan' : 'Skenario Tolak'}) siap dijalankan. Klik <b>▶ Otomatis</b> atau <b>⏭ Langkah Berikutnya</b>.</div>`;
+  }
+
+  function appendLog(html) {
+    const box = document.getElementById('audit-log');
+    if (currentStep === 1) box.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'audit-entry';
+    div.innerHTML = html;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function nextStep() {
+    if (isBusy) return;
+    if (currentStep >= 4) resetSim();
+
+    isBusy = true;
+    setControlsDisabled(true);
+    currentStep++;
+    document.getElementById('step-counter').textContent = `${currentStep} / 4 Langkah`;
+
+    const m = MODELS[currentModel];
+    const s = m[currentScenario];
+    const isAllow = currentScenario === 'allow';
+
+    if (currentStep === 1) {
+      document.getElementById('node-subject').classList.add('hl-blue');
+      appendLog(s.steps[0]);
+      await sleep(300);
+    } else if (currentStep === 2) {
+      document.getElementById('arr-1').classList.add('hl-blue');
+      await animatePacket('node-subject', 'node-policy', s.pkt1, 'blue', 800);
+      document.getElementById('node-policy').classList.add('hl-amber');
+      appendLog(s.steps[1]);
+    } else if (currentStep === 3) {
+      document.getElementById('node-authority').classList.add('hl-amber');
+      await animatePacket('node-authority', 'node-policy', s.pktAuth, 'amber', 800);
+      appendLog(s.steps[2]);
+    } else if (currentStep === 4) {
+      const outcomeClass = isAllow ? 'hl-green' : 'hl-red';
+      const pktColor = isAllow ? 'green' : 'red';
+      document.getElementById('arr-2').classList.add(outcomeClass);
+      await animatePacket('node-policy', 'node-resource', s.pkt2, pktColor, 850);
+      document.getElementById('node-policy').classList.remove('hl-amber');
+      document.getElementById('node-policy').classList.add(outcomeClass);
+      document.getElementById('node-resource').classList.add(outcomeClass);
+      appendLog(s.steps[3]);
+    }
+
+    isBusy = false;
+    setControlsDisabled(false);
+  }
+
+  async function runAuto() {
+    if (isBusy) return;
+    resetSim();
+    for (let i = 0; i < 4; i++) {
+      await nextStep();
+      if (i < 3) await sleep(650);
+    }
+  }
+
+  // Initialize first model
+  renderView();
+</script>
+</body>
+</html>

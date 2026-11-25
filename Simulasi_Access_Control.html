@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praktikum Access Control Minggu 9 — Dasar Keamanan Siber</title>
+<style>
+:root{--navy:#14233b;--blue:#2563eb;--cyan:#eaf3ff;--ink:#1e293b;--muted:#64748b;--line:#dbe3ef;--bg:#f4f7fb;--green:#15803d;--red:#b91c1c;--amber:#a16207}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,#14233b,#234c83);color:white;padding:30px 20px;box-shadow:0 8px 24px #17255418}
+.wrap{max-width:1100px;margin:auto}header h1{margin:0 0 6px;font-size:clamp(24px,4vw,34px)}header p{margin:0;color:#dbeafe;max-width:760px}
+main{max-width:1100px;margin:22px auto;padding:0 16px 40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0}
+.tab{border:1px solid var(--line);background:white;color:var(--navy);padding:10px 15px;border-radius:10px;font-weight:700;cursor:pointer;transition:.15s ease}
+.tab.active{background:var(--blue);border-color:var(--blue);color:white}
+.panel{display:none;background:white;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 6px 22px #1725540b}
+.panel.active{display:block;animation:appear .18s ease}.intro{color:var(--muted);margin-top:-4px}@keyframes appear{from{opacity:.65;transform:translateY(3px)}to{opacity:1;transform:none}}
+h2{margin:0 0 5px;color:var(--navy)}h3{margin:18px 0 8px;color:var(--navy);font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:5px}.field label{font-weight:650;font-size:14px}
+select,input{font:inherit;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:white;color:var(--ink);width:100%}
+button.action{background:var(--blue);border:0;color:white;border-radius:9px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;margin-top:12px}
+button.secondary{background:#eaf1fb;color:#1d4ed8;border:1px solid #cbdcf7}
+.result{margin-top:15px;padding:14px 16px;border-radius:11px;border:1px solid var(--line);background:#f8fafc}
+.result.allow{background:#f0fdf4;border-color:#86efac}.result.deny{background:#fef2f2;border-color:#fecaca}
+.status{font-weight:800;font-size:16px}.allow .status{color:var(--green)}.deny .status{color:var(--red)}
+.note{font-size:13px;color:var(--muted)}.pill{display:inline-block;border-radius:99px;background:#eaf1fb;color:#1e40af;padding:3px 9px;font-size:12px;font-weight:750}
+table{border-collapse:collapse;width:100%;margin-top:10px;font-size:14px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f1f5f9;color:var(--navy)}
+.checks{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}.checks label{display:flex;gap:7px;align-items:center;font-size:14px}.checks input{width:auto}
+.callout{border-left:4px solid var(--blue);background:#eff6ff;padding:12px 14px;border-radius:7px;margin:14px 0}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;padding:18px 0;border-top:1px solid var(--line)}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.panel{padding:17px}.tab{flex:1 1 42%}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Simulasi Access Control</h1>
+  <p>Dasar Keamanan Siber · Pelajari dan uji empat metode pengendalian hak akses: RBAC, ABAC, DAC, dan MAC.</p>
+</div></header>
+<main>
+<div class="callout"><strong>Petunjuk:</strong> Pilih salah satu tab, ubah parameter simulasi, lalu tekan <em>Uji Akses</em>. Perhatikan alasan sistem mengizinkan atau menolak akses. Ini adalah simulasi pembelajaran, bukan sistem keamanan produksi.</div>
+<nav class="tabs" aria-label="Metode access control">
+<button class="tab active" data-tab="rbac">1. RBAC</button>
+<button class="tab" data-tab="abac">2. ABAC</button>
+<button class="tab" data-tab="dac">3. DAC</button>
+<button class="tab" data-tab="mac">4. MAC</button>
+<button class="tab" data-tab="ringkasan">Ringkasan & Kuis</button>
+</nav>
+
+<section class="panel active" id="rbac">
+<h2>RBAC — Role-Based Access Control</h2><p class="intro">Hak akses ditentukan berdasarkan peran pengguna dalam organisasi.</p>
+<div class="grid">
+<div class="field"><label for="rUser">Pilih pengguna</label><select id="rUser"><option value="Mahasiswa">Mahasiswa</option><option value="Dosen">Dosen</option><option value="Administrator Akademik">Administrator Akademik</option><option value="Ketua Program Studi">Ketua Program Studi</option></select></div>
+<div class="field"><label for="rAction">Aktivitas yang ingin dilakukan</label><select id="rAction"><option value="lihat_nilai">Melihat nilai pribadi</option><option value="input_nilai">Memasukkan nilai mahasiswa</option><option value="ubah_data">Memperbarui data akademik</option><option value="atur_kelas">Mengatur kelas dan pendaftaran</option><option value="lihat_laporan">Melihat laporan kelas</option></select></div>
+</div><button class="action" onclick="testRBAC()">Uji Akses</button><div id="rResult" class="result" aria-live="polite">Pilih peran dan aktivitas, lalu uji akses.</div>
+<h3>Gambaran hak akses</h3><table><tr><th>Peran</th><th>Contoh hak akses</th></tr><tr><td>Mahasiswa</td><td>Melihat nilai pribadi, jadwal, dan materi kuliah.</td></tr><tr><td>Dosen</td><td>Memasukkan nilai dan melihat data mahasiswa pada kelas yang diampu.</td></tr><tr><td>Administrator Akademik</td><td>Memperbarui data akademik, kelas, dan pendaftaran mata kuliah.</td></tr><tr><td>Ketua Program Studi</td><td>Melihat laporan akademik program studi.</td></tr></table>
+</section>
+
+<section class="panel" id="abac">
+<h2>ABAC — Attribute-Based Access Control</h2><p class="intro">Keputusan akses didasarkan pada atribut pengguna dan kondisi saat akses dilakukan.</p>
+<div class="grid">
+<div class="field"><label for="aFaculty">Fakultas pengguna</label><select id="aFaculty"><option>Teknik</option><option>Bisnis</option><option>Desain</option></select></div>
+<div class="field"><label for="aLevel">Tingkat akademik</label><select id="aLevel"><option>Sarjana</option><option>Pascasarjana</option></select></div>
+<div class="field"><label for="aResource">Sumber daya</label><select id="aResource"><option value="basic">Jurnal dasar bidang teknik</option><option value="advanced">Jurnal penelitian lanjutan</option><option value="general">Informasi perpustakaan umum</option></select></div>
+<div class="field"><label for="aLocation">Lokasi akses</label><select id="aLocation"><option value="campus">Dalam kampus</option><option value="outside">Luar kampus</option></select></div>
+<div class="field"><label for="aMfa">Autentikasi tambahan (VPN/MFA) sudah dilakukan?</label><select id="aMfa"><option value="no">Belum</option><option value="yes">Sudah</option></select></div>
+</div><button class="action" onclick="testABAC()">Uji Akses</button><div id="aResult" class="result" aria-live="polite">Atur atribut pengguna dan kondisi akses, lalu uji.</div>
+<div class="callout"><strong>Aturan simulasi:</strong> Jurnal bidang teknik hanya untuk pengguna Fakultas Teknik. Jurnal lanjutan hanya untuk mahasiswa pascasarjana. Akses dari luar kampus memerlukan autentikasi tambahan.</div>
+</section>
+
+<section class="panel" id="dac">
+<h2>DAC — Discretionary Access Control</h2><p class="intro">Pemilik data atau sumber daya menentukan siapa yang boleh mengaksesnya.</p>
+<div class="grid">
+<div class="field"><label for="dOwner">Pemilik dokumen</label><select id="dOwner"><option value="Dosen">Dosen (pemilik)</option><option value="Mahasiswa A">Mahasiswa A</option></select></div>
+<div class="field"><label for="dUser">Pengguna yang mencoba akses</label><select id="dUser"><option>Mahasiswa A</option><option>Mahasiswa B</option><option>Mahasiswa C</option><option>Dosen</option></select></div>
+<div class="field"><label for="dPermission">Izin yang diminta</label><select id="dPermission"><option value="view">Melihat</option><option value="edit">Mengedit</option><option value="share">Membagikan kepada orang lain</option></select></div>
+</div>
+<h3>Pengaturan izin oleh pemilik</h3><p class="note">Centang izin untuk setiap pengguna. Perubahan berlaku pada simulasi ini.</p>
+<div class="checks" id="dChecks">
+<label><input type="checkbox" id="dA" checked> Mahasiswa A — Viewer</label>
+<label><input type="checkbox" id="dB"> Mahasiswa B — Editor</label>
+<label><input type="checkbox" id="dC"> Mahasiswa C — Tidak ada akses</label>
+</div>
+<button class="action" onclick="testDAC()">Uji Akses</button><button class="action secondary" onclick="resetDAC()">Reset izin</button><div id="dResult" class="result" aria-live="polite">Atur izin, pilih pengguna, lalu uji akses.</div>
+<div class="callout"><strong>Diskusi:</strong> Apa risiko jika pemilik dokumen memberikan izin Editor kepada terlalu banyak orang?</div>
+</section>
+
+<section class="panel" id="mac">
+<h2>MAC — Mandatory Access Control</h2><p class="intro">Akses ditentukan oleh klasifikasi keamanan data dan tingkat izin pengguna. Dalam model ini, pengguna tidak bebas mengubah klasifikasi atau memberikan izin.</p>
+<div class="grid">
+<div class="field"><label for="mClearance">Tingkat izin pengguna</label><select id="mClearance"><option value="0">Publik</option><option value="1">Rahasia</option><option value="2">Sangat Rahasia</option></select></div>
+<div class="field"><label for="mClass">Klasifikasi dokumen</label><select id="mClass"><option value="0">Publik</option><option value="1">Rahasia</option><option value="2">Sangat Rahasia</option></select></div>
+</div><button class="action" onclick="testMAC()">Uji Akses</button><div id="mResult" class="result" aria-live="polite">Pilih tingkat izin dan klasifikasi dokumen, lalu uji.</div>
+<h3>Contoh klasifikasi dalam materi</h3><table><tr><th>Klasifikasi</th><th>Contoh informasi</th></tr><tr><td>Publik</td><td>Informasi umum kampus.</td></tr><tr><td>Rahasia</td><td>Data keuangan pegawai.</td></tr><tr><td>Sangat Rahasia</td><td>Data kesehatan mahasiswa.</td></tr></table>
+<p class="note">Aturan simulasi disederhanakan: pengguna dapat mengakses dokumen jika tingkat izinnya sama dengan atau lebih tinggi daripada klasifikasi dokumen.</p>
+</section>
+
+<section class="panel" id="ringkasan">
+<h2>Ringkasan Perbandingan</h2><p class="intro">Perhatikan dasar pengambilan keputusan dari setiap metode.</p>
+<table><tr><th>Metode</th><th>Dasar keputusan</th><th>Pertanyaan kunci</th></tr><tr><td><strong>RBAC</strong></td><td>Peran pengguna</td><td>Apa peran pengguna?</td></tr><tr><td><strong>ABAC</strong></td><td>Atribut dan kondisi</td><td>Apa atribut pengguna, sumber daya, dan lingkungannya?</td></tr><tr><td><strong>DAC</strong></td><td>Keputusan pemilik</td><td>Siapa pemilik data dan izin apa yang diberikan?</td></tr><tr><td><strong>MAC</strong></td><td>Klasifikasi dan tingkat izin</td><td>Apakah clearance pengguna memenuhi klasifikasi data?</td></tr></table>
+<h3>Kuis pemahaman</h3>
+<div class="field"><label for="q1">1. Sistem memberi akses berdasarkan peran dosen dan mahasiswa. Metode apa yang digunakan?</label><select id="q1"><option value="">Pilih jawaban</option><option>ABAC</option><option>RBAC</option><option>DAC</option><option>MAC</option></select></div>
+<div class="field" style="margin-top:12px"><label for="q2">2. Pemilik dokumen menentukan siapa yang dapat melihat atau mengedit file. Metode apa?</label><select id="q2"><option value="">Pilih jawaban</option><option>ABAC</option><option>RBAC</option><option>DAC</option><option>MAC</option></select></div>
+<div class="field" style="margin-top:12px"><label for="q3">3. Akses ditentukan berdasarkan lokasi, departemen, dan waktu. Metode apa?</label><select id="q3"><option value="">Pilih jawaban</option><option>ABAC</option><option>RBAC</option><option>DAC</option><option>MAC</option></select></div>
+<div class="field" style="margin-top:12px"><label for="q4">4. Data sangat rahasia hanya dapat dibuka pengguna dengan tingkat izin yang sesuai. Metode apa?</label><select id="q4"><option value="">Pilih jawaban</option><option>ABAC</option><option>RBAC</option><option>DAC</option><option>MAC</option></select></div>
+<button class="action" onclick="gradeQuiz()">Periksa Jawaban</button><div id="qResult" class="result" aria-live="polite">Jawab semua pertanyaan untuk melihat hasil.</div>
+<h3>Tugas praktikum mahasiswa</h3><ol><li>Uji minimal dua kondisi pada setiap metode.</li><li>Catat hasil akses yang diizinkan dan ditolak.</li><li>Jelaskan alasan keputusan sistem.</li><li>Bandingkan kelebihan dan keterbatasan empat metode.</li></ol>
+</section>
+<footer>Media praktikum pembelajaran · Dasar Keamanan Siber · Minggu 9</footer>
+</main>
+<script>
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===b.dataset.tab));}));
+function show(id,ok,title,detail){const e=document.getElementById(id);e.className='result '+(ok?'allow':'deny');e.innerHTML='<div class="status">'+(ok?'✓ AKSES DIIZINKAN':'✕ AKSES DITOLAK')+' — '+title+'</div><div>'+detail+'</div>';}
+const perms={
+'Mahasiswa':['lihat_nilai'],
+'Dosen':['input_nilai','lihat_laporan'],
+'Administrator Akademik':['ubah_data','atur_kelas','lihat_laporan'],
+'Ketua Program Studi':['lihat_laporan']
+};
+const labels={lihat_nilai:'melihat nilai pribadi',input_nilai:'memasukkan nilai',ubah_data:'memperbarui data akademik',atur_kelas:'mengatur kelas dan pendaftaran',lihat_laporan:'melihat laporan kelas'};
+function testRBAC(){let u=rUser.value,a=rAction.value,ok=perms[u].includes(a);show('rResult',ok,u+' dapat '+labels[a],ok?'Aktivitas tersedia untuk peran '+u+'.':'Peran '+u+' tidak memiliki izin untuk aktivitas tersebut pada aturan simulasi.');}
+function testABAC(){let f=aFaculty.value,l=aLevel.value,r=aResource.value,loc=aLocation.value,m=aMfa.value,ok=true,why=[];
+if(r==='basic'&&f!=='Teknik'){ok=false;why.push('Jurnal bidang teknik hanya untuk Fakultas Teknik.')}
+if(r==='advanced'&&(f!=='Teknik'||l!=='Pascasarjana')){ok=false;why.push('Jurnal lanjutan memerlukan atribut Fakultas Teknik dan tingkat Pascasarjana.')}
+if(loc==='outside'&&m!=='yes'){ok=false;why.push('Akses dari luar kampus memerlukan autentikasi tambahan (VPN/MFA).')}
+if(r==='general'&&why.length===0)why.push('Informasi perpustakaan umum tersedia untuk pengguna pada simulasi ini.');
+show('aResult',ok,ok?'Atribut memenuhi aturan':'Atribut tidak memenuhi aturan',why.join(' '));}
+function testDAC(){let u=dUser.value,p=dPermission.value,ok=false,why='';if(u==='Dosen'&&dOwner.value==='Dosen'){ok=true;why='Pemilik dokumen memiliki kendali penuh atas dokumennya.';}else if(u==='Mahasiswa A'){ok=dA.checked&&(p==='view');why=ok?'Mahasiswa A diberi izin Viewer.':'Mahasiswa A hanya memiliki izin Viewer atau tidak diberi akses.';}else if(u==='Mahasiswa B'){ok=dB.checked;why=ok?'Mahasiswa B diberi izin Editor pada simulasi.':'Mahasiswa B belum diberi izin oleh pemilik.';}else if(u==='Mahasiswa C'){ok=dC.checked;why=ok?'Mahasiswa C diberi izin pada simulasi.':'Mahasiswa C belum diberi izin oleh pemilik.';}if(ok&&p==='share'&&u!=='Dosen'&&u!=='Mahasiswa B'){ok=false;why='Izin yang diberikan tidak mencakup kemampuan membagikan dokumen.';}show('dResult',ok,u+' meminta izin '+({view:'melihat',edit:'mengedit',share:'membagikan'}[p]),why);}
+function resetDAC(){dA.checked=true;dB.checked=false;dC.checked=false;dResult.className='result';dResult.textContent='Izin dikembalikan ke pengaturan awal.';}
+function testMAC(){let c=Number(mClearance.value),d=Number(mClass.value),names=['Publik','Rahasia','Sangat Rahasia'],ok=c>=d;show('mResult',ok,'Izin '+names[c]+' · Dokumen '+names[d],ok?'Tingkat izin pengguna memenuhi klasifikasi dokumen.':'Tingkat izin pengguna lebih rendah daripada klasifikasi dokumen.');}
+function gradeQuiz(){let ans=['RBAC','DAC','ABAC','MAC'],ids=['q1','q2','q3','q4'],score=0,missing=0;ids.forEach((id,i)=>{if(!document.getElementById(id).value)missing++;if(document.getElementById(id).value===ans[i])score++;});let e=qResult;e.className='result '+(score===4?'allow':'');e.innerHTML='<div class="status">Skor: '+score+'/4</div>'+(missing?'Masih ada '+missing+' pertanyaan yang belum dijawab. ':'')+'Kunci: 1. RBAC · 2. DAC · 3. ABAC · 4. MAC.';}
+</script>
+</body></html>

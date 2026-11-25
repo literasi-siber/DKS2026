@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulasi Bagan Alur: Kerangka Kerja AAA (Authentication, Authorization, Accounting)</title>
+<style>
+  :root {
+    --bg: #0b1322;
+    --card: #131e33;
+    --card-alt: #18253e;
+    --border: #283a5b;
+    --text: #e6eefc;
+    --muted: #93a6c8;
+    --red: #f45b69;
+    --red-bg: rgba(244, 91, 105, 0.14);
+    --green: #2ec4b6;
+    --green-bg: rgba(46, 196, 182, 0.14);
+    --blue: #4ea8de;
+    --blue-bg: rgba(78, 168, 222, 0.14);
+    --amber: #f7b801;
+    --amber-bg: rgba(247, 184, 1, 0.14);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167, 139, 250, 0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px 14px 48px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    max-width: 1080px;
+    margin: 0 auto 20px;
+  }
+  .header h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+  .header p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* Scenario Switcher Tabs */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    max-width: 1120px;
+    margin: 0 auto 20px;
+  }
+  .tab-btn {
+    background: var(--card);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tab-btn:hover {
+    border-color: var(--blue);
+    color: var(--text);
+  }
+  .tab-btn.active-success {
+    background: linear-gradient(135deg, #103236, #154649);
+    color: #72efdd;
+    border-color: var(--green);
+    box-shadow: 0 4px 14px rgba(46, 196, 182, 0.22);
+  }
+  .tab-btn.active-authfail {
+    background: linear-gradient(135deg, #351621, #471c29);
+    color: #ff8fa3;
+    border-color: var(--red);
+    box-shadow: 0 4px 14px rgba(244, 91, 105, 0.22);
+  }
+  .tab-btn.active-authzfail {
+    background: linear-gradient(135deg, #362912, #473615);
+    color: #ffd166;
+    border-color: var(--amber);
+    box-shadow: 0 4px 14px rgba(247, 184, 1, 0.22);
+  }
+
+  /* Workspace Grid */
+  .workspace {
+    max-width: 1220px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.45fr 0.95fr;
+    gap: 20px;
+  }
+  @media (max-width: 960px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    padding-bottom: 13px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .panel-top h2 {
+    font-size: 16.5px;
+    margin-bottom: 3px;
+  }
+  .panel-top .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .proto-badge {
+    font-family: Consolas, monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--blue-bg);
+    color: #90e0ef;
+    border: 1px solid rgba(78, 168, 222, 0.45);
+    font-weight: 600;
+  }
+
+  /* Architecture Flow Diagram */
+  .flow-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .node {
+    width: 100%;
+    max-width: 560px;
+    background: var(--card-alt);
+    border: 2px solid #324870;
+    border-radius: 11px;
+    padding: 12px 15px;
+    text-align: center;
+    transition: all 0.35s ease;
+    position: relative;
+  }
+  .node-tag {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .node-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .node-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 7px;
+  }
+  .chip {
+    font-family: Consolas, monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #0e1729;
+    border: 1px solid #2e4369;
+    color: #cfe0fc;
+  }
+  .chip.blue { background: var(--blue-bg); border-color: var(--blue); color: #90e0ef; }
+  .chip.amber { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+  .chip.green { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+  .chip.red { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .chip.purple { background: var(--purple-bg); border-color: var(--purple); color: #ddd6fe; }
+
+  /* AAA Server Container with 3 Pillars */
+  .aaa-cluster {
+    width: 100%;
+    max-width: 640px;
+    background: #0f192c;
+    border: 2px solid #364f7a;
+    border-radius: 13px;
+    padding: 13px;
+    transition: all 0.35s ease;
+  }
+  .aaa-cluster-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 7px;
+    border-bottom: 1px dashed #2b3f63;
+    font-size: 12px;
+    font-weight: 700;
+    color: #b8cdf0;
+  }
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+  }
+  @media (max-width: 640px) {
+    .pillars-grid { grid-template-columns: 1fr; }
+  }
+  .pillar {
+    background: var(--card-alt);
+    border: 2px solid #2d4268;
+    border-radius: 10px;
+    padding: 11px 10px;
+    text-align: center;
+    transition: all 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .pillar-num {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .pillar-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .pillar-q {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+  .pillar-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .pillar-status {
+    margin-top: 8px;
+    font-family: Consolas, monospace;
+    font-size: 10.5px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    background: #0b1322;
+    border: 1px solid #263859;
+    color: var(--muted);
+  }
+
+  /* Highlight States */
+  .hl-blue { border-color: var(--blue) !important; box-shadow: 0 0 18px rgba(78, 168, 222, 0.34); transform: scale(1.015); }
+  .hl-amber { border-color: var(--amber) !important; box-shadow: 0 0 18px rgba(247, 184, 1, 0.34); transform: scale(1.015); }
+  .hl-green { border-color: var(--green) !important; box-shadow: 0 0 20px rgba(46, 196, 182, 0.38); transform: scale(1.02); }
+  .hl-red { border-color: var(--red) !important; box-shadow: 0 0 20px rgba(244, 91, 105, 0.38); transform: scale(1.02); }
+  .hl-purple { border-color: var(--purple) !important; box-shadow: 0 0 18px rgba(167, 139, 250, 0.35); transform: scale(1.015); }
+
+  /* Arrows */
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 40px;
+    justify-content: center;
+    width: 100%;
+  }
+  .arrow .line {
+    width: 2px;
+    height: 10px;
+    background: #3a507a;
+    transition: background 0.3s;
+  }
+  .arrow .lbl {
+    font-size: 11px;
+    background: #0d1526;
+    border: 1px solid #2b3e63;
+    padding: 3px 10px;
+    border-radius: 12px;
+    color: var(--muted);
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .arrow.hl-blue .line { background: var(--blue); }
+  .arrow.hl-blue .lbl { border-color: var(--blue); color: #90e0ef; background: #10243b; font-weight: 600; }
+  .arrow.hl-green .line { background: var(--green); }
+  .arrow.hl-green .lbl { border-color: var(--green); color: var(--green); background: #0e2929; font-weight: 600; }
+  .arrow.hl-red .line { background: var(--red); }
+  .arrow.hl-red .lbl { border-color: var(--red); color: var(--red); background: #29131c; font-weight: 600; }
+  .arrow.hl-amber .line { background: var(--amber); }
+  .arrow.hl-amber .lbl { border-color: var(--amber); color: var(--amber); background: #2b220d; font-weight: 600; }
+
+  /* Right Panel Controls & Logs */
+  .step-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0d1526;
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 11px;
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 13px;
+  }
+  button.ctrl {
+    flex: 1;
+    min-width: 105px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  button.ctrl:hover { opacity: 0.9; }
+  button.ctrl:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-play { background: linear-gradient(135deg, #2b6cb0, #2ec4b6); color: #fff; }
+  .btn-step { background: #233b61; color: #e6eefc; border: 1px solid #3c6099 !important; }
+  .btn-reset { background: #1c2840; color: var(--muted); flex: 0.45; min-width: 68px; }
+
+  .audit-box {
+    background: #09101d;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px;
+    font-family: Consolas, monospace;
+    font-size: 11.8px;
+    line-height: 1.55;
+    color: #c5d4ed;
+    min-height: 145px;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 14px;
+  }
+  .audit-entry {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #1e2d4a;
+  }
+  .audit-entry:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  /* Live Accounting Table inside Right Panel */
+  .acct-panel-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--purple);
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .acct-table-wrap {
+    background: #09101d;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    overflow-x: auto;
+  }
+  .acct-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Consolas, monospace;
+    font-size: 11px;
+  }
+  .acct-table th {
+    background: #101b30;
+    color: var(--muted);
+    padding: 7px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .acct-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #18253e;
+    color: #dce7fa;
+    vertical-align: top;
+  }
+  .acct-table tr:last-child td { border-bottom: none; }
+
+  /* Bottom Reference Comparison Table */
+  .table-section {
+    max-width: 1220px;
+    margin: 24px auto 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .table-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .table-wrap { overflow-x: auto; }
+  table.ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  table.ref-table th {
+    background: #0e1729;
+    color: var(--blue);
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  table.ref-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #1f2f4d;
+    color: #d6e2f5;
+    line-height: 1.45;
+    vertical-align: top;
+  }
+  table.ref-table tr:last-child td { border-bottom: none; }
+
+  /* Floating Packet */
+  .packet {
+    position: fixed;
+    z-index: 9999;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-family: Consolas, monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.72);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                top 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.25s ease,
+                transform 0.25s ease;
+    white-space: nowrap;
+  }
+  .packet.blue { background: #102a45; color: #90e0ef; border: 1.5px solid var(--blue); }
+  .packet.amber { background: #382b09; color: #ffd166; border: 1.5px solid var(--amber); }
+  .packet.green { background: #0d3330; color: #72efdd; border: 1.5px solid var(--green); }
+  .packet.red { background: #3a1219; color: #ff8fa3; border: 1.5px solid var(--red); }
+  .packet.purple { background: #261b47; color: #ddd6fe; border: 1.5px solid var(--purple); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Simulasi Bagan Alur: Kerangka Kerja AAA (Authentication, Authorization, Accounting)</h1>
+  <p>Visualisasi arsitektur kontrol akses jaringan & sistem (<b>RADIUS / TACACS+ / IAM Gateway</b>) dari proses verifikasi identitas, pengecekan hak akses, hingga pencatatan telemetri sesi.</p>
+</div>
+
+<!-- Scenario Switcher Tabs -->
+<div class="tabs">
+  <button class="tab-btn active-success" id="tab-success" onclick="selectScenario('success')">✅ Skenario 1: Akses Sukses Penuh (Valid + Izin Sesuai)</button>
+  <button class="tab-btn" id="tab-authfail" onclick="selectScenario('authfail')">⛔ Skenario 2: Gagal di Tahap 1 (Authentication)</button>
+  <button class="tab-btn" id="tab-authzfail" onclick="selectScenario('authzfail')">🚫 Skenario 3: Gagal di Tahap 2 (Authorization)</button>
+</div>
+
+<div class="workspace">
+  <!-- Left Panel: AAA Architecture Diagram -->
+  <div class="panel">
+    <div class="panel-top">
+      <div>
+        <h2 id="scen-title">Skenario 1: Akses Sukses Penuh (End-to-End AAA)</h2>
+        <div class="subtitle" id="scen-subtitle">User terautentikasi dengan MFA, mendapat izin role DBA, mengakses database, dan dicatat penuh di Accounting.</div>
+      </div>
+      <span class="proto-badge">RADIUS / TACACS+ / OIDC</span>
+    </div>
+
+    <div class="flow-area">
+      <!-- 1. Supplicant / User Client -->
+      <div class="node" id="node-client">
+        <div class="node-tag">1. SUPPLICANT / USER CLIENT</div>
+        <div class="node-title" id="client-title">👤 User: andi.pratama@corp.id (Senior DBA)</div>
+        <div class="node-desc" id="client-desc">Mengirim kredensial login + kode OTP MFA untuk mengakses server database produksi.</div>
+        <div class="chip-row" id="client-chips"></div>
+      </div>
+
+      <!-- Arrow 1 -->
+      <div class="arrow" id="arr-1">
+        <div class="line"></div>
+        <div class="lbl" id="arr1-lbl">1. Permintaan Koneksi & Kredensial (TLS / EAP-TLS)</div>
+        <div class="line"></div>
+      </div>
+
+      <!-- 2. Authenticator / NAS / Access Gateway -->
+      <div class="node" id="node-nas">
+        <div class="node-tag">2. AUTHENTICATOR / NAS / ACCESS GATEWAY</div>
+        <div class="node-title">🛡️ VPN Concentrator / Bastion Gateway (10.10.1.1)</div>
+        <div class="node-desc">Mencegat koneksi klien, meneruskan validasi ke AAA Server, dan menegakkan keputusan akses (PEP).</div>
+        <div class="chip-row">
+          <span class="chip blue">Status Port: Controlled</span>
+          <span class="chip">Shared Secret Terenkripsi</span>
+        </div>
+      </div>
+
+      <!-- Arrow 2 -->
+      <div class="arrow" id="arr-2">
+        <div class="line"></div>
+        <div class="lbl" id="arr2-lbl">2. Access-Request diteruskan ke AAA Server</div>
+        <div class="line"></div>
+      </div>
+
+      <!-- 3. AAA Server Cluster -->
+      <div class="aaa-cluster" id="node-aaa">
+        <div class="aaa-cluster-header">
+          <span>🏛️ AAA SERVER ENGINE (Policy Decision Point)</span>
+          <span style="font-family:Consolas,monospace;font-size:11px;color:var(--blue);">UDP 1812/1813 • TCP 49</span>
+        </div>
+        <div class="pillars-grid">
+          <!-- Pillar 1: Authentication -->
+          <div class="pillar" id="pillar-authn">
+            <div>
+              <div class="pillar-num">TAHAP 1</div>
+              <div class="pillar-title">1️⃣ Authentication</div>
+              <div class="pillar-q">"Siapa Anda?"</div>
+              <div class="pillar-desc" id="authn-desc">Verifikasi Password + Token MFA terhadap Direktori Identitas (LDAP/AD).</div>
+            </div>
+            <div class="pillar-status" id="authn-status">Menunggu...</div>
+          </div>
+
+          <!-- Pillar 2: Authorization -->
+          <div class="pillar" id="pillar-authz">
+            <div>
+              <div class="pillar-num">TAHAP 2</div>
+              <div class="pillar-title">2️⃣ Authorization</div>
+              <div class="pillar-q">"Apa yang Boleh?"</div>
+              <div class="pillar-desc" id="authz-desc">Cek Role, VLAN, Command Set & kebijakan akses target.</div>
+            </div>
+            <div class="pillar-status" id="authz-status">Menunggu...</div>
+          </div>
+
+          <!-- Pillar 3: Accounting -->
+          <div class="pillar" id="pillar-acct">
+            <div>
+              <div class="pillar-num">TAHAP 3</div>
+              <div class="pillar-title">3️⃣ Accounting</div>
+              <div class="pillar-q">"Apa yang Dilakukan?"</div>
+              <div class="pillar-desc" id="acct-desc">Mencatat Acct-Start, perintah/paket data, durasi & Acct-Stop ke SIEM.</div>
+            </div>
+            <div class="pillar-status" id="acct-status">Menunggu...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arrow 3 -->
+      <div class="arrow" id="arr-3">
+        <div class="line"></div>
+        <div class="lbl" id="arr3-lbl">3. Sesi Terbuka Menuju Protected Resource</div>
+        <div class="line"></div>
+      </div>
+
+      <!-- 4. Protected Resource -->
+      <div class="node" id="node-resource">
+        <div class="node-tag">4. PROTECTED RESOURCE / TARGET SYSTEM</div>
+        <div class="node-title" id="res-title">🗄️ Core-DB-01 (192.168.50.10) — Production Cluster</div>
+        <div class="node-desc" id="res-desc">Hanya dapat diakses setelah Gateway menerima Access-Accept dari AAA Server.</div>
+        <div class="chip-row" id="res-chips"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Controls, Technical Log & Live Accounting Table -->
+  <div class="panel">
+    <div class="panel-top" style="margin-bottom:12px;">
+      <div>
+        <h2>🎛️ Kontrol Simulasi & Telemetri AAA</h2>
+        <div class="subtitle">Amati perubahan status tiap pilar AAA dan log Accounting secara real-time.</div>
+      </div>
+    </div>
+
+    <div class="step-indicator">
+      <span>Progres Alur AAA:</span>
+      <strong id="step-counter" style="color:var(--blue);">0 / 5 Langkah</strong>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl btn-play" id="btn-auto" onclick="runAuto()">▶ Jalankan Otomatis</button>
+      <button class="ctrl btn-step" id="btn-next" onclick="nextStep()">⏭ Langkah Berikutnya</button>
+      <button class="ctrl btn-reset" onclick="resetSim()">Reset</button>
+    </div>
+
+    <div class="audit-box" id="tech-log">
+      <div class="audit-entry">Pilih skenario di bagian atas, lalu klik <b>▶ Jalankan Otomatis</b> atau <b>⏭ Langkah Berikutnya</b> untuk memulai simulasi alur AAA.</div>
+    </div>
+
+    <div class="acct-panel-title">
+      <span>📊 Live Accounting & Security Audit Log (SIEM)</span>
+      <span style="font-family:Consolas,monospace;font-size:10.5px;color:var(--muted);" id="acct-count">0 Record</span>
+    </div>
+    <div class="acct-table-wrap">
+      <table class="acct-table">
+        <thead>
+          <tr>
+            <th>Waktu</th>
+            <th>Tipe Event</th>
+            <th>User / Role</th>
+            <th>Detail Telemetri</th>
+          </tr>
+        </thead>
+        <tbody id="acct-tbody">
+          <tr>
+            <td colspan="4" style="color:var(--muted);text-align:center;padding:14px;">Belum ada record Accounting yang dikirim...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Reference Comparison Table -->
+<div class="table-section">
+  <h3>📚 Tabel Referensi Perbandingan Tiga Pilar AAA</h3>
+  <div class="table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Pilar AAA</th>
+          <th>Pertanyaan Kunci</th>
+          <th>Fungsi Utama</th>
+          <th>Mekanisme / Teknologi</th>
+          <th>Protokol Utama</th>
+          <th>Contoh Output / Record</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Authentication</strong><br><span style="color:var(--blue);font-size:11px;">Autentikasi</span></td>
+          <td><em>"Siapa Anda?"</em><br>(Verifikasi Identitas)</td>
+          <td>Memastikan subjek (user atau perangkat) benar-benar entitas yang diklaim sebelum memasuki jaringan/sistem.</td>
+          <td>Password, MFA/OTP, Sertifikat Digital (X.509), Biometrik, LDAP / Active Directory.</td>
+          <td>RADIUS (Access-Request), TACACS+, EAP-TLS, Kerberos, OIDC</td>
+          <td><code>Access-Accept</code> atau <code>Access-Reject</code> (Invalid Credentials)</td>
+        </tr>
+        <tr>
+          <td><strong>2. Authorization</strong><br><span style="color:var(--green);font-size:11px;">Otorisasi</span></td>
+          <td><em>"Apa yang Boleh Anda Lakukan?"</em><br>(Kontrol Hak Akses)</td>
+          <td>Menentukan sumber daya, hak istimewa (privilege), atau perintah spesifik yang diizinkan setelah identitas tervalidasi.</td>
+          <td>RBAC, ABAC, ACL, Penetapan VLAN dinamis, Pembatasan Command CLI.</td>
+          <td>RADIUS Attributes, TACACS+ (Author), OAuth 2.0 Scopes, SAML</td>
+          <td><code>VLAN-ID: 50</code>, <code>Priv-Lvl: 15</code>, atau <code>Authorization-Denied</code></td>
+        </tr>
+        <tr>
+          <td><strong>3. Accounting</strong><br><span style="color:var(--purple);font-size:11px;">Akuntansi / Audit</span></td>
+          <td><em>"Apa yang Telah Anda Lakukan?"</em><br>(Pencatatan & Forensik)</td>
+          <td>Merekam aktivitas sesi pengguna secara kronologis untuk kebutuhan audit kepatuhan, forensik insiden, dan penagihan (billing).</td>
+          <td>Session Logging, Command Accounting, SIEM Forwarding, Syslog.</td>
+          <td>RADIUS Accounting (UDP 1813), TACACS+ (Acct), Diameter</td>
+          <td><code>Acct-Status-Type = Start / Interim-Update / Stop</code>, durasi & perintah CLI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const SCENARIOS = {
+    success: {
+      title: 'Skenario 1: Akses Sukses Penuh (End-to-End AAA)',
+      subtitle: 'User terautentikasi dengan MFA, mendapat izin role DBA, mengakses database, dan dicatat penuh di Accounting.',
+      clientTitle: '👤 User: andi.pratama@corp.id (Senior DBA)',
+      clientDesc: 'Mengirim kredensial valid + kode OTP MFA untuk melakukan pemeliharaan Core-DB-01.',
+      clientChips: [
+        { text: 'User: andi.pratama', cls: 'blue' },
+        { text: 'Pass + MFA: Valid', cls: 'green' },
+        { text: 'Target: Core-DB-01', cls: '' }
+      ],
+      resTitle: '🗄️ Core-DB-01 (192.168.50.10) — Production Cluster',
+      resDesc: 'Sesi SSH/SQL terenkripsi dibuka melalui Gateway setelah lolos Authentication & Authorization.',
+      resChips: [
+        { text: 'Policy: Role == Senior_DBA', cls: 'green' },
+        { text: 'Status: Sesi Aktif & Diaudit', cls: 'green' }
+      ],
+      steps: [
+        {
+          log: '<b>[1/5] Supplicant Mengirim Kredensial:</b> <code>andi.pratama@corp.id</code> mengirimkan username, password, dan kode OTP MFA ke VPN/Bastion Gateway.',
+          action: async () => {
+            hl('node-client', 'hl-blue');
+            hl('arr-1', 'hl-blue');
+            await animatePacket('node-client', 'node-nas', '🔑 User + Pass + OTP MFA', 'blue');
+            hl('node-nas', 'hl-blue');
+          }
+        },
+        {
+          log: '<b>[2/5] Tahap 1 — Authentication (SUKSES):</b> Gateway meneruskan <code>Access-Request</code> ke AAA Server. Identitas <code>andi.pratama</code> & OTP MFA terverifikasi valid di Active Directory.',
+          action: async () => {
+            hl('arr-2', 'hl-blue');
+            await animatePacket('node-nas', 'node-aaa', '📨 RADIUS Access-Request', 'blue');
+            hl('node-aaa', 'hl-blue');
+            hl('pillar-authn', 'hl-green');
+            setPillarStatus('authn-status', '✅ VERIFIED (MFA OK)', 'var(--green)');
+          }
+        },
+        {
+          log: '<b>[3/5] Tahap 2 — Authorization (DIIZINKAN):</b> AAA Server mengevaluasi kebijakan: user memiliki role <code>Senior_DBA</code> yang berhak mengakses <code>Core-DB-01</code>. AAA mengirim <code>Access-Accept</code> beserta atribut profil sesi.',
+          action: async () => {
+            hl('pillar-authz', 'hl-green');
+            setPillarStatus('authz-status', '✅ PERMIT (Role: DBA)', 'var(--green)');
+            await animatePacket('pillar-authz', 'node-nas', '✅ Access-Accept + Profile DBA', 'green');
+          }
+        },
+        {
+          log: '<b>[4/5] Koneksi Resource & Accounting Start:</b> Gateway membuka akses ke <code>Core-DB-01</code> dan langsung mengirim paket <code>Acct-Status-Type = Start</code> ke modul Accounting.',
+          action: async () => {
+            hl('arr-3', 'hl-green');
+            await animatePacket('node-nas', 'node-resource', '🔓 Sesi Terotorisasi (Port 5432)', 'green');
+            hl('node-resource', 'hl-green');
+            hl('pillar-acct', 'hl-purple');
+            setPillarStatus('acct-status', '📝 RECORDING (Start)', 'var(--purple)');
+            await animatePacket('node-nas', 'pillar-acct', '📊 Acct-Start (SID: #8841)', 'purple');
+            addAcctRow('Acct-Start', 'andi.pratama (DBA)', 'Sesi dimulai ke Core-DB-01 (IP: 10.10.1.1)');
+          }
+        },
+        {
+          log: '<b>[5/5] Accounting Interim-Update & Stop:</b> Selama sesi berjalan dan saat selesai, seluruh aktivitas (durasi 14m, 4.2 MB, 12 query) dicatat via <code>Acct-Interim</code> dan <code>Acct-Stop</code> ke SIEM.',
+          action: async () => {
+            await animatePacket('node-resource', 'pillar-acct', '📊 Acct-Interim & Acct-Stop', 'purple');
+            setPillarStatus('acct-status', '✅ LOGGED (Start→Stop)', 'var(--green)');
+            addAcctRow('Acct-Interim', 'andi.pratama (DBA)', 'Exec: SELECT/EXPLAIN • Traffic: 4.2 MB');
+            addAcctRow('Acct-Stop', 'andi.pratama (DBA)', 'Sesi ditutup normal • Durasi: 14m 22s');
+          }
+        }
+      ]
+    },
+
+    authfail: {
+      title: 'Skenario 2: Gagal di Tahap 1 — Authentication',
+      subtitle: 'Kredensial salah atau kode OTP MFA tidak valid. Alur dihentikan seketika sebelum menyentuh Authorization maupun Resource.',
+      clientTitle: '👤 User / Penyerang: andi.pratama@corp.id (Kredensial Salah)',
+      clientDesc: 'Mencoba login menggunakan password yang salah / token MFA kedaluwarsa.',
+      clientChips: [
+        { text: 'User: andi.pratama', cls: 'amber' },
+        { text: 'Pass / MFA: INVALID ❌', cls: 'red' },
+        { text: 'Target: Core-DB-01', cls: '' }
+      ],
+      resTitle: '🗄️ Core-DB-01 (192.168.50.10) — Terlindungi',
+      resDesc: 'Tidak pernah menerima paket koneksi apa pun karena gerbang NAS tetap terkunci.',
+      resChips: [
+        { text: 'Status: Tidak Tersentuh', cls: 'green' },
+        { text: 'Port Gateway: Tetap Tertutup', cls: 'red' }
+      ],
+      steps: [
+        {
+          log: '<b>[1/5] Supplicant Mengirim Kredensial:</b> Klien mengirimkan kombinasi username <code>andi.pratama</code> dengan password/OTP yang keliru ke Gateway.',
+          action: async () => {
+            hl('node-client', 'hl-amber');
+            hl('arr-1', 'hl-amber');
+            await animatePacket('node-client', 'node-nas', '🔑 User + Invalid Pass/OTP', 'amber');
+            hl('node-nas', 'hl-amber');
+          }
+        },
+        {
+          log: '<b>[2/5] Tahap 1 — Authentication (GAGAL):</b> AAA Server memeriksa hash password/OTP dan mendeteksi ketidakcocokan. Autentikasi ditolak!',
+          action: async () => {
+            hl('arr-2', 'hl-red');
+            await animatePacket('node-nas', 'node-aaa', '📨 RADIUS Access-Request', 'amber');
+            hl('node-aaa', 'hl-red');
+            hl('pillar-authn', 'hl-red');
+            setPillarStatus('authn-status', '❌ FAILED (Bad Creds)', 'var(--red)');
+          }
+        },
+        {
+          log: '<b>[3/5] Tahap 2 — Authorization Dilewati (Bypassed):</b> Karena identitas gagal dibuktikan pada tahap pertama, mesin Authorization <b>tidak dijalankan</b>.',
+          action: async () => {
+            setPillarStatus('authz-status', '⏭️ SKIPPED (No Identity)', 'var(--muted)');
+            await sleep(450);
+          }
+        },
+        {
+          log: '<b>[4/5] Access-Reject Dikirim ke Gateway:</b> AAA Server membalas dengan <code>Access-Reject</code>. Gateway memutus koneksi klien dan memblokir akses ke <code>Core-DB-01</code>.',
+          action: async () => {
+            await animatePacket('pillar-authn', 'node-nas', '⛔ RADIUS Access-Reject', 'red');
+            hl('node-nas', 'hl-red');
+            hl('arr-3', 'hl-red');
+            document.getElementById('arr3-lbl').textContent = '3. Koneksi Diblokir di Gateway (Tidak Diteruskan)';
+          }
+        },
+        {
+          log: '<b>[5/5] Pencatatan Security Alert:</b> Percobaan login gagal dicatat di log keamanan (SIEM) untuk deteksi dini serangan <i>Brute-Force</i> atau <i>Credential Stuffing</i>.',
+          action: async () => {
+            hl('pillar-acct', 'hl-amber');
+            setPillarStatus('acct-status', '⚠️ ALERT LOGGED', 'var(--amber)');
+            await animatePacket('node-nas', 'pillar-acct', '🚨 Auth-Failure Alert', 'red');
+            addAcctRow('Auth-Failed', 'andi.pratama (Unverified)', 'Access-Reject: Invalid Password/MFA (IP Eksternal)');
+          }
+        }
+      ]
+    },
+
+    authzfail: {
+      title: 'Skenario 3: Gagal di Tahap 2 — Authorization',
+      subtitle: 'Identitas user valid (lolos Authentication), namun tidak memiliki hak akses (Role/Privilege) ke resource sensitif yang diminta.',
+      clientTitle: '👤 User: rina.wijaya@corp.id (Role: Staff Marketing)',
+      clientDesc: 'Login dengan akun karyawan yang sah & MFA valid, namun mencoba mengakses database produksi Core-DB-01.',
+      clientChips: [
+        { text: 'User: rina.wijaya', cls: 'blue' },
+        { text: 'Pass + MFA: Valid ✅', cls: 'green' },
+        { text: 'Role: Marketing_Staff', cls: 'amber' }
+      ],
+      resTitle: '🗄️ Core-DB-01 (192.168.50.10) — Akses Ditolak',
+      resDesc: 'Membutuhkan role Senior_DBA. Permintaan dari role Marketing_Staff diblokir oleh kebijakan.',
+      resChips: [
+        { text: 'Syarat: Role == Senior_DBA', cls: 'amber' },
+        { text: 'Status: Terlindungi (Denied)', cls: 'red' }
+      ],
+      steps: [
+        {
+          log: '<b>[1/5] Supplicant Mengirim Permintaan:</b> Karyawan internal <code>rina.wijaya@corp.id</code> mengirim kredensial login sah beserta permintaan koneksi ke <code>Core-DB-01</code>.',
+          action: async () => {
+            hl('node-client', 'hl-blue');
+            hl('arr-1', 'hl-blue');
+            await animatePacket('node-client', 'node-nas', '🔑 rina.wijaya + Valid MFA', 'blue');
+            hl('node-nas', 'hl-blue');
+          }
+        },
+        {
+          log: '<b>[2/5] Tahap 1 — Authentication (SUKSES):</b> AAA Server memverifikasi bahwa <code>rina.wijaya</code> benar karyawan aktif perusahaan dengan MFA yang sah.',
+          action: async () => {
+            hl('arr-2', 'hl-blue');
+            await animatePacket('node-nas', 'node-aaa', '📨 RADIUS Access-Request', 'blue');
+            hl('node-aaa', 'hl-amber');
+            hl('pillar-authn', 'hl-green');
+            setPillarStatus('authn-status', '✅ VERIFIED (Valid Staff)', 'var(--green)');
+          }
+        },
+        {
+          log: '<b>[3/5] Tahap 2 — Authorization (DITOLAK):</b> Mesin kebijakan memeriksa hak akses: Role <code>Marketing_Staff</code> <b>tidak diizinkan</b> mengakses <code>Core-DB-01</code> (Prinsip <i>Least Privilege</i>).',
+          action: async () => {
+            hl('pillar-authz', 'hl-red');
+            setPillarStatus('authz-status', '🚫 DENIED (Insufficient Role)', 'var(--red)');
+            await animatePacket('pillar-authz', 'node-nas', '🚫 Authorization-Denied', 'red');
+          }
+        },
+        {
+          log: '<b>[4/5] Penegakan Blokir di Gateway:</b> Gateway menolak pembukaan sesi ke <code>Core-DB-01</code> meskipun user telah lolos autentikasi.',
+          action: async () => {
+            hl('node-nas', 'hl-red');
+            hl('arr-3', 'hl-red');
+            document.getElementById('arr3-lbl').textContent = '3. Diblokir oleh Policy Enforcement (Unauthorized)';
+          }
+        },
+        {
+          log: '<b>[5/5] Tahap 3 — Accounting Mencatat Pelanggaran Kebijakan:</b> Percobaan akses tidak sah oleh user terautentikasi (<i>Privilege Escalation / Insider Probe</i>) dicatat lengkap di SIEM.',
+          action: async () => {
+            hl('pillar-acct', 'hl-purple');
+            setPillarStatus('acct-status', '📝 AUDIT LOGGED (Denied)', 'var(--purple)');
+            await animatePacket('node-nas', 'pillar-acct', '📊 Audit: Unauthorized Access', 'amber');
+            addAcctRow('Authz-Denied', 'rina.wijaya (Marketing)', 'Ditolak ke Core-DB-01 (Butuh Role: Senior_DBA)');
+          }
+        }
+      ]
+    }
+  };
+
+  let currentScen = 'success';
+  let currentStep = 0;
+  let isBusy = false;
+  let recordCount = 0;
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function hl(id, cls) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('hl-blue', 'hl-amber', 'hl-green', 'hl-red', 'hl-purple');
+    if (cls) el.classList.add(cls);
+  }
+
+  function setPillarStatus(id, text, color) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.style.color = color;
+    el.style.borderColor = color;
+  }
+
+  function animatePacket(fromId, toId, text, colorClass = 'blue', duration = 800) {
+    return new Promise(resolve => {
+      const fromEl = document.getElementById(fromId);
+      const toEl = document.getElementById(toId);
+      if (!fromEl || !toEl) return resolve();
+
+      const r1 = fromEl.getBoundingClientRect();
+      const r2 = toEl.getBoundingClientRect();
+
+      const pkt = document.createElement('div');
+      pkt.className = `packet ${colorClass}`;
+      pkt.textContent = text;
+      pkt.style.left = (r1.left + r1.width / 2) + 'px';
+      pkt.style.top = (r1.top + r1.height / 2) + 'px';
+      document.body.appendChild(pkt);
+
+      requestAnimationFrame(() => {
+        pkt.style.opacity = '1';
+        pkt.style.transform = 'translate(-50%, -50%) scale(1)';
+        requestAnimationFrame(() => {
+          pkt.style.left = (r2.left + r2.width / 2) + 'px';
+          pkt.style.top = (r2.top + r2.height / 2) + 'px';
+        });
+      });
+
+      setTimeout(() => {
+        pkt.style.opacity = '0';
+        pkt.style.transform = 'translate(-50%, -50%) scale(0.85)';
+        setTimeout(() => {
+          pkt.remove();
+          resolve();
+        }, 240);
+      }, duration);
+    });
+  }
+
+  function addAcctRow(eventType, userRole, detail) {
+    const tbody = document.getElementById('acct-tbody');
+    if (recordCount === 0) tbody.innerHTML = '';
+    recordCount++;
+    document.getElementById('acct-count').textContent = `${recordCount} Record`;
+
+    const now = new Date().toLocaleTimeString('id-ID', { hour12: false });
+    let badgeColor = 'var(--purple)';
+    if (eventType.includes('Failed') || eventType.includes('Denied')) badgeColor = 'var(--red)';
+    else if (eventType === 'Acct-Stop') badgeColor = 'var(--green)';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--muted);white-space:nowrap;">${now}</td>
+      <td><span style="color:${badgeColor};font-weight:700;">${eventType}</span></td>
+      <td>${userRole}</td>
+      <td>${detail}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function renderScenario() {
+    const s = SCENARIOS[currentScen];
+    document.getElementById('scen-title').textContent = s.title;
+    document.getElementById('scen-subtitle').textContent = s.subtitle;
+
+    document.getElementById('client-title').textContent = s.clientTitle;
+    document.getElementById('client-desc').textContent = s.clientDesc;
+    document.getElementById('client-chips').innerHTML = s.clientChips
+      .map(c => `<span class="chip ${c.cls}">${c.text}</span>`)
+      .join('');
+
+    document.getElementById('res-title').textContent = s.resTitle;
+    document.getElementById('res-desc').textContent = s.resDesc;
+    document.getElementById('res-chips').innerHTML = s.resChips
+      .map(c => `<span class="chip ${c.cls}">${c.text}</span>`)
+      .join('');
+
+    resetSim();
+  }
+
+  function selectScenario(key) {
+    if (isBusy) return;
+    currentScen = key;
+
+    document.getElementById('tab-success').className = 'tab-btn' + (key === 'success' ? ' active-success' : '');
+    document.getElementById('tab-authfail').className = 'tab-btn' + (key === 'authfail' ? ' active-authfail' : '');
+    document.getElementById('tab-authzfail').className = 'tab-btn' + (key === 'authzfail' ? ' active-authzfail' : '');
+
+    renderScenario();
+  }
+
+  function setControlsDisabled(disabled) {
+    document.getElementById('btn-auto').disabled = disabled;
+    document.getElementById('btn-next').disabled = disabled;
+  }
+
+  function resetSim() {
+    currentStep = 0;
+    isBusy = false;
+    recordCount = 0;
+    setControlsDisabled(false);
+
+    ['node-client', 'node-nas', 'node-aaa', 'node-resource', 'pillar-authn', 'pillar-authz', 'pillar-acct', 'arr-1', 'arr-2', 'arr-3'].forEach(id => {
+      hl(id, null);
+    });
+
+    setPillarStatus('authn-status', 'Menunggu...', 'var(--muted)');
+    setPillarStatus('authz-status', 'Menunggu...', 'var(--muted)');
+    setPillarStatus('acct-status', 'Menunggu...', 'var(--muted)');
+
+    document.getElementById('arr3-lbl').textContent = '3. Sesi Terbuka Menuju Protected Resource';
+    document.getElementById('step-counter').textContent = '0 / 5 Langkah';
+    document.getElementById('tech-log').innerHTML =
+      `<div class="audit-entry">Skenario siap dijalankan. Klik <b>▶ Jalankan Otomatis</b> atau <b>⏭ Langkah Berikutnya</b> untuk menelusuri alur AAA.</div>`;
+    document.getElementById('acct-count').textContent = '0 Record';
+    document.getElementById('acct-tbody').innerHTML =
+      `<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:14px;">Belum ada record Accounting yang dikirim...</td></tr>`;
+  }
+
+  function appendTechLog(html) {
+    const box = document.getElementById('tech-log');
+    if (currentStep === 1) box.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'audit-entry';
+    div.innerHTML = html;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function nextStep() {
+    if (isBusy) return;
+    const steps = SCENARIOS[currentScen].steps;
+    if (currentStep >= steps.length) resetSim();
+
+    isBusy = true;
+    setControlsDisabled(true);
+    const stepObj = steps[currentStep];
+    currentStep++;
+    document.getElementById('step-counter').textContent = `${currentStep} / ${steps.length} Langkah`;
+
+    appendTechLog(stepObj.log);
+    await stepObj.action();
+
+    isBusy = false;
+    setControlsDisabled(false);
+  }
+
+  async function runAuto() {
+    if (isBusy) return;
+    resetSim();
+    const total = SCENARIOS[currentScen].steps.length;
+    for (let i = 0; i < total; i++) {
+      await nextStep();
+      if (i < total - 1) await sleep(650);
+    }
+  }
+
+  // Initialize default scenario
+  renderScenario();
+</script>
+</body>
+</html>
